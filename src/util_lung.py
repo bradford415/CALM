@@ -10,9 +10,9 @@ import random
 def parse_data(filename=None, input_seq_length=19648, input_num_classes=10, output_num_classes=4, samples=10):
     if filename != None:
         samples_filename = filename
-        label_filename = 'lung_sample_condition_no_sample_names.txt'
-        sample_lines = open(samples_filename).readlines()
-        label_lines = open(label_filename).readlines()
+        label_filename = '../input/lung_sample_condition_no_sample_names.txt'
+        sample_lines = open("../input/" + samples_filename).readlines()
+        label_lines = open("../input/" + label_filename).readlines()
         assert len(sample_lines) == len(label_lines)
         data = {}
         for line_idx in range(len(sample_lines)):

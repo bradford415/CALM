@@ -4,5 +4,4 @@ __pycache__/
 input/*
 output/*
 # exception to the exclude everything rule, keep only the .gitkeep which is a blank file. Cannot commit blank directories
-!input/.gitkeep
 !output/.gitkeep

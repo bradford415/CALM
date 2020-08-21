@@ -7,8 +7,8 @@
 cd $PBS_O_WORKDIR
 
 module load anaconda3/5.1.0-gcc/8.3.1
-source activate myenv
+source activate mytest
 
 cd src
 
-python input/RNA_lung_main_output.py
+python RNA_lung_main_output.py

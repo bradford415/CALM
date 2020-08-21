@@ -38,8 +38,8 @@ Move the GEM file and labels file into the 'input' directory. Currently, the GEM
 
 ## Running
 To run the code, navigate to the root directory of the project and schedule the job with the following command
-'''
+```
 qsub lung_GEM_NN.pbs
-'''
+```
 While the job is running, several files will be created in the input directory but these can be ignored. When the job finishes, pbs will create an output file which just shows genreal print and error statements, this file begins with 'lungGTEx'. The important output is the results file which is saved in the output directory and has the extention '.emx_results_test'. This file lists the training loss, accuracy of the model, number of predictions correct, and number of predictions per epoch.
 

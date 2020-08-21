@@ -31,6 +31,9 @@ conda create -n myenv python=3.7 pytorch pandas
 In the lung_GEM_NN.pbs script, the virtual env name will need to match virtual env being used. The default name is 'myenv'. Change the line below if neccessary.
 
 ```
-
+source activate myenv
 ```
+
+### Input Files
+Move the GEM file and labels file into the 'input' directory. 
 

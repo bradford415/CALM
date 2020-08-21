@@ -15,8 +15,7 @@ Naviagte to the desired directory and clone the repository as shown belown. On t
 
 ```
 module add git/2.27.0-gcc/8.3.1
-```
-```
+
 git clone https://github.com/bradford415/multiclassification.git
 ```
 

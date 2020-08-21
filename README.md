@@ -14,7 +14,7 @@ Because this project is meant to be run on the Palmetto Cluster, an Anaconda Env
 Naviagte to the desired directory and clone the repository as shown belown. On the palmetto cluster, you will probably need to add the git module first.
 
 ```module add git/2.27.0-gcc/8.3.1```
-```git clone 
+```git clone https://github.com/bradford415/multiclassification.git```
 
 ### Anaconda Environment
 

@@ -12,17 +12,25 @@ Because this project is meant to be run on the Palmetto Cluster, an Anaconda Env
 
 ### Installation
 Naviagte to the desired directory and clone the repository as shown belown. On the palmetto cluster, the git module will probably need to be added first.
+
 ```
 module add git/2.27.0-gcc/8.3.1
 
 git clone https://github.com/bradford415/multiclassification.git
 ```
+
 ### Anaconda Environment
 Create a virtual environment with the required dependecies. If a virtual envrionment already exists and meets these requirements, this step can be skipped.
 ```
 module add anaconda3/5.10-gcc/8.3.1
-```
-```
+
 conda create -n myenv python=3.7 pytorch pandas
+```
+
+### PBS Script
+In the lung_GEM_NN.pbs script, the virtual env name will need to match virtual env being used. The default name is 'myenv'. Change the line below if neccessary.
+
+```
+
 ```
 

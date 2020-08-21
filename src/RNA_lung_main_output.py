@@ -26,7 +26,7 @@ def NormalizeData(data, x, y):
 
 #load matrix
 print("loading matrix")
-RNA_matrix = pd.read_csv("lung.emx.txt", sep='\t', index_col=[0])
+RNA_matrix = pd.read_csv("../input/lung.emx.txt", sep='\t', index_col=[0])
 
 is_NaN = RNA_matrix.isnull()
 row_has_NaN = is_NaN.any(axis=1)
@@ -58,14 +58,14 @@ strings = strings.sort_index()
 
 #save it
 print("saving string file")
-strings.to_csv("lung_strings.emx", sep='\t', index=False, header=False)
+strings.to_csv("../input/lung_strings.emx", sep='\t', index=False, header=False)
 print("done saving string file")
 #print(strings)
 
 ##normalize
 
-f = open('lung_strings.emx', 'r')
-f1 = open('lung_strings_normalized.emx', 'w+')
+f = open('../input/lung_strings.emx', 'r')
+f1 = open('../input/lung_strings_normalized.emx', 'w+')
 
 f = f.readlines()
 #print(len(f))
@@ -178,4 +178,4 @@ for i in range(1):
         scheduler.step(acc)
         loss_avgmeter.reset()
 
-    summary_file.to_csv("%s_results_test" %(args.filename), sep='\t', index=False)
+    summary_file.to_csv("../output/%s_results_test" %(args.filename), sep='\t', index=False)

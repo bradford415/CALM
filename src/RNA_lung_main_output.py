@@ -13,9 +13,22 @@ import torch
 import numpy as np
 import math
 from torch.utils import data
+from definitions import INPUT_DIR
+from definitions import OUTPUT_DIR
 
 loci_number = 19648
 group = 'lung'
+
+parser = argparse.ArgumentParser(description='NetSeq.')
+parser.add_argument('--batch_size', type=int, default=16)
+parser.add_argument('--max_epoch', type=int, default=500)
+parser.add_argument('--input_num_classes', type=int, default=10)
+parser.add_argument('--output_num_classes', type=int, default=4)
+parser.add_argument('--seq_length', type=int, default=loci_number)
+parser.add_argument('--sample_file', type=str, default='lung.emx.txt')
+parser.add_argument('--label_file', type=str, default='lung_sample_condition_no_sample_names.txt')
+
+args = parser.parse_args()
 
 #normalize function
 def NormalizeData(data, x, y):
@@ -24,84 +37,80 @@ def NormalizeData(data, x, y):
     normalized = (array*range2) + x
     return normalized
 
+# Create file paths
+LABEL_FILE = os.path.join(INPUT_DIR, args.label_file)
+SAMPLE_FILE = os.path.join(INPUT_DIR, args.sample_file)
+SAMPLE_STRINGS = os.path.join(INPUT_DIR, args.sample_file.split('.', 1)[0] + '_strings.emx')
+NORMALIZED_SAMPLE = os.path.join(INPUT_DIR, args.sample_file.split('.', 1)[0] + '_strings_normalized.emx')
+RESULTS_FILE = os.path.join(OUTPUT_DIR, "%s_results_test" %(args.sample_file))
+
+print('Batch Size: %d Epochs: %d \n'% (args.batch_size, args.max_epoch))
+
 #load matrix
 print("loading matrix")
-RNA_matrix = pd.read_csv("../input/lung.emx.txt", sep='\t', index_col=[0])
+RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 
+# Puts genes that have any nan values at the end
 is_NaN = RNA_matrix.isnull()
 row_has_NaN = is_NaN.any(axis=1)
 rows_with_NaN = RNA_matrix[row_has_NaN]
 rows_without_NaN = RNA_matrix[~row_has_NaN]
-#print(len(rows_without_NaN))
 RNA_matrix_T = pd.concat([rows_without_NaN, rows_with_NaN], axis=0)
-#print(len(RNA_matrix_final_T))
 
 #transpose so that samples are along y axis
+#sort df by index so that sample names match label names
 print("transposing matrix")
 RNA_matrix_TR = RNA_matrix_T.T
-#sort df by index so that sample names match label names
 RNA_matrix_TR = RNA_matrix_TR.sort_index()
+
 #get rid of nans
 #RNA_matrix_TR = RNA_matrix_TR.replace(np.nan, '', regex=True)
 
 #save matrix to double check it looks like what I think it should look like
 #sample names down y axis, genes as column names
-print("saving copy of matrix")
-RNA_matrix_TR.to_csv("lung_format_check.emx", sep='\t')
+#RNA_matrix_TR.to_csv("lung_format_check.emx", sep='\t')
 
 #convert to strings
 print("turning matrix into strings")
 strings = pd.DataFrame([])
 strings['string'] = RNA_matrix_TR.iloc[:,:].astype(str).apply(lambda y: ','.join(y), axis = 1)
 strings = strings.sort_index()
-#print(strings)
 
 #save it
 print("saving string file")
-strings.to_csv("../input/lung_strings.emx", sep='\t', index=False, header=False)
+strings.to_csv(SAMPLE_STRINGS, sep='\t', index=False, header=False)
 print("done saving string file")
 #print(strings)
 
 ##normalize
-
-f = open('../input/lung_strings.emx', 'r')
-f1 = open('../input/lung_strings_normalized.emx', 'w+')
+f = open(SAMPLE_STRINGS, 'r')
+f1 = open(NORMALIZED_SAMPLE, 'w+')
 
 f = f.readlines()
-#print(len(f))
 
 for j in f:
     j = j.rstrip('\n')
     j = j.split(',')
-   #print(j)
     sample_data = ([float(i) for i in j])
     amin, amax = min(sample_data), max(sample_data)
     sample_data = [amin if math.isnan(x) else x for x in sample_data]
     sample_data = NormalizeData(sample_data, 0, 9)
     sample_data = sample_data.astype(int)
-    #print(sample_data)
     for h in sample_data:
-        #print(h)
         f1.write(str(h))
     f1.write('\n')
 f1.close()
 
-parser = argparse.ArgumentParser(description='NetSeq.')
-parser.add_argument('--max_epoch', type=int, default=500)
-parser.add_argument('--input_num_classes', type=int, default=10)
-parser.add_argument('--output_num_classes', type=int, default=4)
-parser.add_argument('--seq_length', type=int, default=loci_number)
-parser.add_argument('--filename', type=str, default=None)
-parser.add_argument('--batch_size', type=int, default=16)
+# Deleting unnecessary files 
+os.remove(SAMPLE_STRINGS)
 
 for i in range(1):
 
-    args = parser.parse_args()
-    #print(args)
-    args.filename = ('lung_strings_normalized.emx')
+    #args.filename = ('lung_strings_normalized.emx')
+    #normalized_filename = file_name + '_strings_normalized.emx' 
 
-
-    train_data, val_data = util_lung.parse_data(filename=args.filename,
+    train_data, val_data = util_lung.parse_data(sample_file=NORMALIZED_SAMPLE,
+                                           label_file=LABEL_FILE,
                                            input_seq_length=args.seq_length,
                                            input_num_classes=args.input_num_classes,
                                            output_num_classes=args.output_num_classes)
@@ -117,7 +126,7 @@ for i in range(1):
     #Training Code Generator
     batch_size = args.batch_size
     training_generator = data.DataLoader(train_dataset, batch_size=batch_size)
-    val_generator = data.DataLoader(val_dataset, batch_size=1)
+    val_generator = data.DataLoader(val_dataset, batch_size=batch_size)
 
     #loss_fn = torch.nn.BCEWithLogitsLoss()
     loss_fn = torch.nn.CrossEntropyLoss()
@@ -174,8 +183,8 @@ for i in range(1):
         run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %loss_avgmeter.val, '%2.3f' %acc_avg, '%d' % acc, '%d' % total_val_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
         summary_file = summary_file.append(run_file)
         print(epoch)
-        print('Epoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d '% (epoch, loss_avgmeter.val, acc_avg, acc, total_val_items))
+        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, loss_avgmeter.val, acc_avg, acc, total_val_items))
         scheduler.step(acc)
         loss_avgmeter.reset()
 
-    summary_file.to_csv("../output/%s_results_test" %(args.filename), sep='\t', index=False)
+    summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)

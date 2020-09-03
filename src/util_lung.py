@@ -5,102 +5,86 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import random
+import os
+from definitions import INPUT_DIR
 
-
-def parse_data(filename=None, input_seq_length=19648, input_num_classes=10, output_num_classes=4, samples=10):
-    if filename != None:
-        samples_filename = filename
-        label_filename = '../input/lung_sample_condition_no_sample_names.txt'
-        sample_lines = open("../input/" + samples_filename).readlines()
-        label_lines = open("../input/" + label_filename).readlines()
+def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_num_classes=10, output_num_classes=4, samples=10):
+    if sample_file != None:
+        SAMPLES_FILENAME = os.path.join(INPUT_DIR, sample_file)
+        LABEL_FILENAME = os.path.join(INPUT_DIR, label_file)
+        sample_lines = open(SAMPLES_FILENAME).readlines()
+        label_lines = open(LABEL_FILENAME).readlines()
         assert len(sample_lines) == len(label_lines)
+
+        # Map label index to sample data in a dictionary 
         data = {}
         for line_idx in range(len(sample_lines)):
-            #sample_name, sample_data = sample_lines[line_idx].replace("\n","").split("\t")
             sample_data = sample_lines[line_idx]
             sample_name = str(line_idx)
             if sample_name not in data:
                 data[sample_name] = {}
             data[sample_name]['data'] = sample_data.replace("-1","3")
 
-        GN_ctr = []
-        TLUAD_ctr = []
-        TLUSC_ctr = []
-        TN_ctr = []
+        # Get unique all unique labels, sort them, create a dictionary to assign label values
+        labels = [s.strip('\n') for s in set(label_lines)]
+        labels.sort()
+        labels_dict = {k: v for v, k in enumerate(labels)}
 
+        all_sample_indexes = [[] for i in range(len(labels))]
+
+        # Append the index for each label to the list
+        # and add a 2nd value (the label) to the index key in the dictionary
+        # A dictionary entry will look like: '1400': {'data': '123456', 'label': 2.0}
         for line_idx in range(len(label_lines)):
             label_data = label_lines[line_idx].replace("\n","")
-            #print(label_data)
             name = str(line_idx)
-            if label_data == 'GTEx_normal':
-                label_data = 0.0
-                GN_ctr.append(name)
-            elif label_data == 'TCGA-LUAD':
-                label_data = 1.0
-                TLUAD_ctr.append(name)
-            elif label_data == 'TCGA-LUSC':
-                label_data = 2.0
-                TLUSC_ctr.append(name)
-            elif label_data == 'TCGA-NORMAL':
-                label_data = 3.0
-                TN_ctr.append(name)
+
+            if label_data in labels_dict:
+                label_data = labels_dict[label_data]
+                all_sample_indexes[label_data].append(name)
+                label_data = float(label_data)
             else:
-                print(label_data)
                 raise ('Issue')
 
             if name in data:
-                data[name]['prediction'] = label_data
+                data[name]['label'] = label_data
             else:
                 print('Skipping', name)
+                
+        # Find the number of occurences for each label and only take 80% of it
+        label_weightings = [int(0.8 * len(length)) for length in all_sample_indexes]
 
-        #print('--------------------------')
-        #print('Total Dataset : %d ' % ( len ( data)))
-        #print('Pos : %d Negative %d' % (len(true_ctr), len(false_ctr)))
-        #print('--------------------------')
+        # Create training list of the sample indexes with proper label weighting, then flatten to 1d
+        sample_train = [random.sample(samples, k=label_weightings[index]) \
+                        for index, samples in enumerate(all_sample_indexes)]
+        sample_train = [j for sub in sample_train for j in sub]
 
-        ##sample_true=int(0.8 * len(true_ctr))
-        ##sample_false = int(0.8 * len(false_ctr))
-        sample_GN = int(0.8 * len(GN_ctr))
-        sample_TLUAD = int(0.8 * len(TLUAD_ctr))
-        sample_TLUSC = int(0.8 * len(TLUSC_ctr))
-        sample_TN = int(0.8 * len(TN_ctr))
+        # Create validation list (output for sample_val is actually a set), then flatten to 1d
+        sample_val = [ set(samples).difference(set(sample_train)) for samples in all_sample_indexes]
+        sample_val = [ j for sub in sample_val for j in sub]
 
-        sample_train = list(random.sample(GN_ctr, k=sample_GN)) + \
-		list(random.sample(TLUAD_ctr, k=sample_TLUAD)) + \
-                list(random.sample(TLUSC_ctr, k=sample_TLUSC)) + \
-                list(random.sample(TN_ctr, k=sample_TN))
-
-        sample_val = set(list(GN_ctr) + \
-		list(TLUAD_ctr) + \
-                list(TLUSC_ctr) + \
-                list(TN_ctr)).difference(set(sample_train))
-
-        #print(len(sample_train), len(sample_val))
         data_train_input, data_train_output = [],[]
         data_val_input, data_val_output = [], []
 
+        # Match the index from the randomized list to the dictionary key 
+        # Store the data in one list and the label in another
+        # Finally, return these lists
         for sample_train_item in sample_train:
             tmp = []
             data_string = data[sample_train_item]['data'].replace("\n","")
-            #print(data_string)
             for string_index in range(len(data_string)):
-                #print(string_index)
                 tmp.append(int(data_string[string_index]))
-            #print(len(tmp))
-            #assert(len(tmp)) == 230
             data_train_input.append(tmp)
-            data_train_output.append(data[sample_train_item]['prediction'])
+            data_train_output.append(data[sample_train_item]['label'])
 
         for sample_val_item in sample_val:
             tmp = []
             data_string = data[sample_val_item]['data'].replace("\n","")
             for string_index in range(len(data_string)):
                 tmp.append(int(data_string[string_index]))
-            #print(len(tmp))
-            #assert(len(tmp)) == input_seq_length
             data_val_input.append(tmp)
-            data_val_output.append(data[sample_val_item]['prediction'])
-        #print('Training Size: %d \n Val Size : %d' %(len(data_train_input), len(data_val_input)))
+            data_val_output.append(data[sample_val_item]['label'])
+        print('\nTraining Size: %d\n Val Size : %d \n\n' %(len(data_train_input), len(data_val_input)))
         return (data_train_input, data_train_output), (data_val_input, data_val_output)
 
     else: #Create Data

@@ -6,6 +6,7 @@ This project takes two input files, a gene expression matrix (GEM) and text file
 ## Requirements
 - pytorch
 - pandas
+- matplotlib
 
 ## Setup
 Because this project is meant to be run on the Palmetto Cluster, an Anaconda Environment will need to be set up with the required dependencies installed.
@@ -24,7 +25,7 @@ Create a virtual environment with the required dependecies. If a virtual envrion
 ```
 module add anaconda3/5.10-gcc/8.3.1
 
-conda create -n myenv python=3.7 pytorch pandas
+conda create -n myenv python=3.7 pytorch pandas matplotlib
 ```
 
 ### PBS Script

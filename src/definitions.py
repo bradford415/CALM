@@ -1,5 +1,5 @@
 """
-Definitions.py
+definitions.py
 
 Used to store the directory paths. These paths are used
 in the python scripts in the source directory

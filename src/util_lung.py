@@ -84,7 +84,7 @@ def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_
                 tmp.append(int(data_string[string_index]))
             data_val_input.append(tmp)
             data_val_output.append(data[sample_val_item]['label'])
-        print('\nTraining Size: %d\n Val Size : %d \n\n' %(len(data_train_input), len(data_val_input)))
+        print('\nTraining Size: %d\nVal Size : %d \n\n' %(len(data_train_input), len(data_val_input)))
         return (data_train_input, data_train_output), (data_val_input, data_val_output)
 
     else: #Create Data

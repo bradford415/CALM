@@ -11,13 +11,14 @@ import argparse
 import dataset
 import torch
 import numpy as np
+#import matplotlib.pyplot as plt
 import math
 from torch.utils import data
 from definitions import INPUT_DIR
 from definitions import OUTPUT_DIR
 
-loci_number = 19648
 group = 'lung'
+loci_number = 19648
 
 parser = argparse.ArgumentParser(description='NetSeq.')
 parser.add_argument('--batch_size', type=int, default=16)
@@ -47,8 +48,11 @@ RESULTS_FILE = os.path.join(OUTPUT_DIR, "%s_results_test" %(args.sample_file))
 print('Batch Size: %d Epochs: %d \n'% (args.batch_size, args.max_epoch))
 
 #load matrix
-print("loading matrix")
+print("Loading Matrix")
 RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
+
+# Get sequence length (num rows) - input to the nn
+args.seq_length = len(RNA_matrix.index)
 
 # Puts genes that have any nan values at the end
 is_NaN = RNA_matrix.isnull()
@@ -136,55 +140,105 @@ for i in range(1):
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,verbose=True, patience=50)
 
     loss_avgmeter = util_lung.AverageMeter()
-
+    
     summary_file = pd.DataFrame([], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
+    #train_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
+    #val_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
 
     for epoch in range(args.max_epoch):
-        # Training
-        print(epoch)
-        print("step 1")
+
+        total_items = 0
+        acc = 0.0
+
+        # Training 
+        print("Step 1 - Training the network")
         for local_batch, local_labels in training_generator:
-            local_batch=local_batch.unsqueeze(1).float()
-            #local_labels = local_labels.unsqueeze(1).float()
+
+            total_items += local_labels.shape[0] 
+            local_batch = local_batch.unsqueeze(1).float()
+
+            # Predict in-sample labels
             prediction = net(local_batch)
-            #loss = loss_fn(prediction, local_labels.float())
+            #pred_labels_softmax = torch.softmax(prediction, dim=1)
+            #_, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
+
+            #correct = (pred_labels_tags == local_labels).float()
+            #acc += correct.sum()
+
+            # Calculate loss and update weights
             loss = loss_fn(prediction, local_labels.long())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+            # Calculate loss per epoch - loss_avgmeter.sum stores this value
             loss_avgmeter.update(loss.item(), batch_size)
+        
+        acc_avg = acc/total_items
+        #print(acc_avg)
+        #print(loss_avgmeter.sum)
+        #temp_stats = pd.DataFrame([acc_avg, loss_avgmeter.sum]) # might need to changed to .val instead of .sum
+        #train_stats.append(temp_stats)
 
-        total_val_items= 0
+        total_items = 0
+        correct = 0
         acc = 0.0
-        print("step 2")
+        acc_avg = 0.0
+        loss_avgmeter.reset()
 
+        # Validation
+        print("Step 2 - Testing the network")
         for local_batch, local_labels in val_generator:
 
-            total_val_items += local_labels.shape[0]
+            total_items += local_labels.shape[0]
             local_batch = local_batch.unsqueeze(1).float()
-            #local_labels = local_labels.unsqueeze(1).float()
 
-            #pred_labels = torch.nn.Sigmoid()(net(local_batch))
+            # Predict out-sample labels
             pred_labels = net(local_batch)
-            #softmax = torch.nn.Softmax(1)
             pred_labels_softmax = torch.softmax(pred_labels, dim=1)
             _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1) 
             
-            #acc  += (pred_labels >= 0.5).eq(local_labels)
             correct = (pred_labels_tags == local_labels).float()
             acc += correct.sum()
 
-        print("step 3")
+            #loss = loss_fn(pred_labels, local_labels.logn())
+            #loss_avgmeter.update(loss.item(), batch_size)
 
-        acc_avg = acc/total_val_items
-        #print("Accuracy average")
-        #print(acc_avg)
+        print("Step 3 - Calcuating loss/accuracy")
 
-        run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %loss_avgmeter.val, '%2.3f' %acc_avg, '%d' % acc, '%d' % total_val_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
+        acc_avg = acc/total_items
+        #temp_stats = pd.DataFrame([acc_avg, loss_avgmeter.sum]) # might need to changed to .val instead of .sum
+        #val_stats.append(temp_stats)
+
+
+
+        run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %loss_avgmeter.val, '%2.3f' %acc_avg, '%d' % acc, '%d' % total_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
         summary_file = summary_file.append(run_file)
         print(epoch)
-        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, loss_avgmeter.val, acc_avg, acc, total_val_items))
+        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, loss_avgmeter.val, acc_avg, acc, total_items))
         scheduler.step(acc)
         loss_avgmeter.reset()
+
+    """# Plot Accuracy 
+    plt.plot(train_stats['accuracy'])
+    plt.plot(val_stats['accuracy'])
+    plt.title("Accuracy")
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    plt.legend(["Training", "Validation"], loc="upper left")
+    #plt.show()
+
+    plt.savefig('accuracy.pdf')
+
+    # Plot Loss 
+    plt.plot(train_stats['loss'])
+    plt.plot(val_stats['loss'])
+    plt.title("Loss")
+    plt.ylabel("Accuracy")
+    plt.xlabel("Epoch")
+    plt.legend(["Training", "Validation"], loc="upper left")
+    #plt.show()
+
+    plt.savefig('loss.pdf')"""
 
     summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)

@@ -7,6 +7,7 @@ This project takes two input files, a gene expression matrix (GEM) and text file
 - pytorch
 - pandas
 - matplotlib
+- sklearn
 
 ## Setup
 Because this project is meant to be run on the Palmetto Cluster, an Anaconda Environment will need to be set up with the required dependencies installed.

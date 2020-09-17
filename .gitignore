@@ -3,5 +3,5 @@ README.md
 
 # exclude everything
 input/*
-gem_nn.*
+nn_output.*
 

@@ -26,7 +26,7 @@ Create a virtual environment with the required dependecies. If a virtual envrion
 ```
 module add anaconda3/5.10-gcc/8.3.1
 
-conda create -n myenv python=3.7 pytorch pandas matplotlib
+conda create -n myenv python=3.7 pytorch pandas matplotlib sklearn
 ```
 
 ### PBS Script

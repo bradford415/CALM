@@ -1,7 +1,7 @@
 __pycache__/
-ReadMe.md
+README.md
 
 # exclude everything
 input/*
-lungGTEx.*
+gem_nn.*
 

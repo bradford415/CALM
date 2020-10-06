@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#PBS -N nn_output
+#PBS -l select=1:ncpus=16:mem=64gb,walltime=24:00:00
+#PBS -j oe
+
+cd $PBS_O_WORKDIR
+
+module load anaconda3/5.1.0-gcc/8.3.1
+source activate myenv
+
+python src/RNA_main.py --max_epoch 100 \
+                       --output_num_classes 4 \
+                       --batch_size 16 \
+                       --sample_file lung.emx.txt \
+                       --label_file lung_sample_condition_no_sample_names.txt \
+                       --plot_results True
+
+# Print the amount of resources used
+qstat -xf $node | head -n 10
+

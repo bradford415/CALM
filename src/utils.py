@@ -5,8 +5,28 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import random
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 import os
+from sklearn.metrics import confusion_matrix
 from definitions import INPUT_DIR
+from definitions import OUTPUT_DIR
+
+def get_labels(label_file=None):
+    """ Get list of unique sample labels """
+    labels = []
+
+    if label_file != None:
+        LABEL_FILENAME = os.path.join(INPUT_DIR, label_file)
+        labels_file = open(LABEL_FILENAME, 'r')
+        label_lines = labels_file.readlines()
+        labels = [s.strip('\n') for s in set(label_lines)]
+        labels.sort()
+        labels_file.close()
+    
+    return labels
+
 
 def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_num_classes=10, output_num_classes=4, samples=10):
     if sample_file != None:
@@ -25,16 +45,19 @@ def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_
                 data[sample_name] = {}
             data[sample_name]['data'] = sample_data.replace("-1","3")
 
-        # Get unique all unique labels, sort them, create a dictionary to assign label values
+        # Get unique all unique labels, sort them, create a dictionary to assign label values (the index of the labels)
         labels = [s.strip('\n') for s in set(label_lines)]
         labels.sort()
         labels_dict = {k: v for v, k in enumerate(labels)}
 
+
+        # A 2D list to store the indexes for each sample, each row is a new label
+        # so if there are 4 labels there will be 4 rows
         all_sample_indexes = [[] for i in range(len(labels))]
 
         # Append the index for each label to the list
         # and add a 2nd value (the label) to the index key in the dictionary
-        # A dictionary entry will look like: '1400': {'data': '123456', 'label': 2.0}
+        # In the data dictionary, an entry will look like: '1400': {'data': '123456', 'label': 2.0}
         for line_idx in range(len(label_lines)):
             label_data = label_lines[line_idx].replace("\n","")
             name = str(line_idx)
@@ -87,7 +110,7 @@ def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_
         print('\nTraining Size: %d\nVal Size : %d \n\n' %(len(data_train_input), len(data_val_input)))
         return (data_train_input, data_train_output), (data_val_input, data_val_output)
 
-    else: #Create Data
+    else: #Create random data 
         input_data = []
         data_train_input = np.random.randint(input_num_classes, size=(samples,input_seq_length))
         data_train_output = np.random.randint(output_num_classes, size=(samples))
@@ -139,13 +162,68 @@ class Net(nn.Module):
         return x
 
 
+def plots(train_stats, val_stats, y_target_list, y_pred_list, labels,
+          graphs_title="Training vs Validation", cm_title="Confusion Matrix"):
+    """Plot training/validation accuracy/loss and Confusion Matrix"""
 
-def accuracy(output, target):
+    # Set up dimensions for plots
+    dimensions = (7,12)
+    fig, axis = plt.subplots(figsize=dimensions)
+    axis.set_ylabel("Actual")
+    axis.set_xlabel("Predicted")
+    axis.set_title(cm_title)
+
+    # Plot Accuracy
+    figure = plt.figure()
+    figure.set_figheight(12)
+    figure.set_figwidth(7)
+    plot1 = figure.add_subplot(211)
+    plot1.plot(train_stats['accuracy'])
+    plot1.plot(val_stats['accuracy'])
+    plot1.set_title(graphs_title)
+    plot1.set_ylabel("Accuracy")
+    plot1.set_xlabel("Epoch")
+    plt.legend(["Training", "Validation"], loc="upper left")
+
+    # Plot Loss 
+    plot2 = figure.add_subplot(212)
+    plot2.plot(train_stats['loss'])
+    plot2.plot(val_stats['loss'])
+    plot2.set_title(graphs_title)
+    plot2.set_ylabel("Loss")
+    plot2.set_xlabel("Epoch")
+    plot2.legend(["Training", "Validation"], loc="upper left")
+
+    # Plot CM
+    confusion_matrix_df = pd.DataFrame(confusion_matrix(y_target_list, y_pred_list))
+    sns_heatmap=sns.heatmap(confusion_matrix_df, ax=axis, annot=True, cbar=False,
+                                square=True, xticklabels=labels, yticklabels=labels)
+
+    # Save plots into pdf
+    plt.savefig(os.path.join(OUTPUT_DIR, 'stats.pdf'))
+    sns_heatmap.figure.savefig(os.path.join(OUTPUT_DIR, "confusion_matrix.pdf"))
+
+
+def NormalizeData(data, x, y):
+    """Normalize Data between to values x and y"""
+    array = (data - np.min(data)) / (np.max(data) - np.min(data))
+    range2 = y - x;
+    normalized = (array*range2) + x
+    return normalized
+
+def multi_accuracy(output,target):
+    """Computes the accuracy for multiclass predictions"""
+
+    return
+    
+
+def bin_accuracy(output, target):
     """Computes the accuracy for multiple binary predictions"""
     pred = output >= 0.5
     truth = target >= 0.5
     acc = pred.eq(truth).sum() / target.numel()
     return acc
+
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""

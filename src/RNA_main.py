@@ -23,7 +23,7 @@ loci_number = 19648
 parser = argparse.ArgumentParser(description='NetSeq.')
 parser.add_argument('--batch_size', type=int, default=16)
 parser.add_argument('--max_epoch', type=int, default=500)
-parser.add_argument('--input_num_classes', type=int, default=10)
+parser.add_argument('--input_num_classes', type=int, default=10) # Normalization range - ex: 0-9 => 10
 parser.add_argument('--output_num_classes', type=int, default=4)
 parser.add_argument('--seq_length', type=int, default=loci_number)
 parser.add_argument('--sample_file', type=str, default='lung.emx.txt')
@@ -52,14 +52,14 @@ RESULTS_FILE = os.path.join(OUTPUT_DIR, "%s_results_test" %(args.sample_file))
 
 print('Batch Size: %d Epochs: %d \n'% (args.batch_size, args.max_epoch))
 
-
-#load matrix
+# Load matrix
 print("Loading Matrix")
 RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 
 # Get number of samples and list of labels - log this information
 args.seq_length = len(RNA_matrix.index)
 labels = utils.get_labels(LABEL_FILE)
+args.output_num_classes = len(labels)
 logger.info('Number of samples: ' + args.seq_length + '\n')
 logger.info('Labels: ')
 for i in range(len(labels)):
@@ -85,7 +85,7 @@ RNA_matrix_TR = RNA_matrix_TR.sort_index()
 #sample names down y axis, genes as column names
 #RNA_matrix_TR.to_csv("lung_format_check.emx", sep='\t')
 
-#convert to strings
+# Convert data to strings
 print("turning matrix into strings")
 strings = pd.DataFrame([])
 strings['string'] = RNA_matrix_TR.iloc[:,:].astype(str).apply(lambda y: ','.join(y), axis = 1)
@@ -165,13 +165,9 @@ for i in range(1):
             total_items += local_labels.shape[0] 
             local_batch = local_batch.unsqueeze(1).float()
 
-            # Predict in-sample labels
+            # Predict in-sample labels and get training accuracy
             prediction = net(local_batch)
-            pred_labels_softmax = torch.softmax(prediction, dim=1)
-            _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
-
-            correct = (pred_labels_tags == local_labels).float()
-            acc += correct.sum()
+            acc += utils.multi_accuracy(local_labels, prediction)
 
             # Calculate loss and update weights
             loss = loss_fn(prediction, local_labels.long())
@@ -200,13 +196,9 @@ for i in range(1):
             total_items += local_labels.shape[0]
             local_batch = local_batch.unsqueeze(1).float()
 
-            # Predict out-sample labels
+            # Predict out-sample labels (samples network hasn't seen) and get validation accuracy
             pred_labels = net(local_batch)
-            pred_labels_softmax = torch.softmax(pred_labels, dim=1)
-            _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
-            
-            correct = (pred_labels_tags == local_labels).float()
-            acc += correct.sum()
+            acc += utils.multi_accuracy(local_labels, pred_labels)
 
             loss = loss_fn(pred_labels, local_labels.long())
             loss_avgmeter.update(loss.item(), batch_size)
@@ -224,7 +216,8 @@ for i in range(1):
         scheduler.step(acc)
         loss_avgmeter.reset()
 
-    
+    # All epochs finished - Below is used for testing the network, plots and saving results
+
     if(args.plot_results):
         # List to store predictions and actual labels for confusion matrix
         y_pred_list = []

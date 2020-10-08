@@ -2,6 +2,7 @@
 Utils.py
 """
 import numpy as np
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import random
@@ -43,7 +44,9 @@ def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_
             sample_name = str(line_idx)
             if sample_name not in data:
                 data[sample_name] = {}
-            data[sample_name]['data'] = sample_data.replace("-1","3")
+            data[sample_name]['data'] = sample_data.replace("-1","3") 
+            # -1 denotes a 'T', 'C' or undetected genotype
+            # The -1 is then converted to a 3 by convention
 
         # Get unique all unique labels, sort them, create a dictionary to assign label values (the index of the labels)
         labels = [s.strip('\n') for s in set(label_lines)]
@@ -86,11 +89,11 @@ def parse_data(sample_file=None, label_file=None, input_seq_length=19648, input_
         sample_val = [ set(samples).difference(set(sample_train)) for samples in all_sample_indexes]
         sample_val = [ j for sub in sample_val for j in sub]
 
-        data_train_input, data_train_output = [],[]
+        data_train_input, data_train_output = [], []
         data_val_input, data_val_output = [], []
 
         # Match the index from the randomized list to the dictionary key 
-        # Store the data in one list and the label in another
+        # Store the data in one list and the label in another - input and output
         # Finally, return these lists
         for sample_train_item in sample_train:
             tmp = []
@@ -211,18 +214,22 @@ def NormalizeData(data, x, y):
     normalized = (array*range2) + x
     return normalized
 
-def multi_accuracy(output,target):
-    """Computes the accuracy for multiclass predictions"""
 
-    return
+def multi_accuracy(actual_labels, predicted_labels):
+    """Computes the accuracy for multiclass predictions"""
+    pred_labels_softmax = torch.softmax(predicted_labels, dim=1)
+    _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
+
+    correct = (pred_labels_tags == actual_labels).float()
+    return correct.sum()
     
 
-def bin_accuracy(output, target):
+def bin_accuracy(actual_labels, predicted_labels):
     """Computes the accuracy for multiple binary predictions"""
-    pred = output >= 0.5
-    truth = target >= 0.5
-    acc = pred.eq(truth).sum() / target.numel()
-    return acc
+    actual_labels = actual_labels.unsqueeze(1).float()
+    pred_labels_sigmoid = torch.nn.Sigmoid(predicted_labels)
+
+    return (pred_labels_sigmoid >= 0.5).eq(actual_labels)
 
 
 class AverageMeter(object):

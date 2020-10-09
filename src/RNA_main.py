@@ -39,8 +39,8 @@ logging.basicConfig(filename=os.path.join(OUTPUT_DIR,'classifier_' + str(datetim
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.info('Network log file for ' + args.sample_file + ' - ' + str(datetime.today().strftime('%Y-%m-%d-%H:%M')) + '\n')
-logger.info('Batch size: ' + args.batch_size)
-logger.info('Number of epochs: ' + args.max_epoch)
+logger.info('Batch size: %d', args.batch_size)
+logger.info('Number of epochs: %d', args.max_epoch)
 logger.info('Sample filename: ' + args.sample_file)
 
 # Initialize file paths
@@ -60,7 +60,7 @@ RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 args.seq_length = len(RNA_matrix.index)
 labels = utils.get_labels(LABEL_FILE)
 args.output_num_classes = len(labels)
-logger.info('Number of samples: ' + args.seq_length + '\n')
+logger.info('Number of samples: %d\n', args.seq_length)
 logger.info('Labels: ')
 for i in range(len(labels)):
     logger.info('       %d - %s', i, labels[i])

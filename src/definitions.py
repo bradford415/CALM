@@ -4,7 +4,7 @@ definitions.py
 Used to store the directory paths. These paths are used
 in the python scripts in the source directory
 
-I was orginally running the program wrongly so I created this file.
+I was orginally running the program incorrectly so I created this file.
 It makes the code cleaner but probably isn't neccessary
 """
 import os

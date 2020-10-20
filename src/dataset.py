@@ -14,8 +14,7 @@ class Dataset(data.Dataset):
                             Example before this funciton is called the data is normalized 
                             between 0-9 => 10 values, so if the data value is 5 a one-hot tensor of value 
                             [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] will be created, this variable has 
-                            NOTHING to do with the number of labels. If you choose to not return 
-                            one-hot labels the accuracy substantially decreases and im not sure why.
+                            NOTHING to do with the number of labels in the dataset.
         output_num_classes - number of labels that are being classified 
         """
         self.input_num_classes  = input_num_classes

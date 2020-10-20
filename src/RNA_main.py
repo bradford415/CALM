@@ -28,6 +28,7 @@ parser.add_argument('--output_num_classes', type=int, default=4)
 parser.add_argument('--seq_length', type=int, default=loci_number)
 parser.add_argument('--sample_file', type=str, default='lung.emx.txt')
 parser.add_argument('--label_file', type=str, default='lung_sample_condition_no_sample_names.txt')
+parser.add_argument('--continuous_discrete', type=str, default='continuous')
 parser.add_argument('--plot_results', type=bool, default=True)
 
 args = parser.parse_args()
@@ -42,6 +43,15 @@ logger.info('Network log file for ' + args.sample_file + ' - ' + str(datetime.to
 logger.info('Batch size: %d', args.batch_size)
 logger.info('Number of epochs: %d', args.max_epoch)
 logger.info('Sample filename: ' + args.sample_file)
+
+if args.continuous_discrete != 'continuous' or args.continuous_discrete != 'discrete':
+    logger.error("ERROR: check that the continuous_discrete argument is spelled correctly.")
+    logger.error("       only continuous or discrete data can be processed.")
+    sys.exit("\nCommand line argument error. Please check the log file.\n")
+
+# If data is discrete, data should only range between 0-3
+if args.continuous_discrete == "discrete":
+    args.input_num_classes = 4
 
 # Initialize file paths
 LABEL_FILE = os.path.join(INPUT_DIR, args.label_file)
@@ -60,6 +70,9 @@ RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 args.seq_length = len(RNA_matrix.index)
 labels = utils.get_labels(LABEL_FILE)
 args.output_num_classes = len(labels)
+if len(labels) == 2:
+    is_binary = True
+    args.output_num_classess = 1
 logger.info('Number of samples: %d\n', args.seq_length)
 logger.info('Labels: ')
 for i in range(len(labels)):
@@ -107,15 +120,15 @@ for j in f:
     sample_data = ([float(i) for i in j])
     amin, amax = min(sample_data), max(sample_data)
     sample_data = [amin if math.isnan(x) else x for x in sample_data]
-    sample_data = utils.NormalizeData(sample_data, 0, 9)
+    if args.continuous_discrete == "continuous":
+        sample_data = utils.NormalizeData(sample_data, 0, 9)
     sample_data = sample_data.astype(int)
     for h in sample_data:
         f1.write(str(h))
     f1.write('\n')
 f1.close()
 
-# Deleting unnecessary files 
-os.remove(SAMPLE_STRINGS)
+
 
 for i in range(1):
 
@@ -135,13 +148,16 @@ for i in range(1):
                    input_num_classes=args.input_num_classes,
                    output_num_classes=args.output_num_classes)
 
-    #Training Code Generator
+    # Characterize dataset
+    # drop_last adjusts the last batch size when the given batch size is not divisible by the number of samples
     batch_size = args.batch_size
-    training_generator = data.DataLoader(train_dataset, batch_size=batch_size)
-    val_generator = data.DataLoader(val_dataset, batch_size=batch_size)
+    training_generator = data.DataLoader(train_dataset, batch_size=batch_size, drop_last=False)
+    val_generator = data.DataLoader(val_dataset, batch_size=batch_size, drop_last=False)
 
-    #loss_fn = torch.nn.BCEWithLogitsLoss()
-    loss_fn = torch.nn.CrossEntropyLoss()
+    if is_binary:
+        loss_fn = torch.nn.BCEWithLogitsLoss()
+    else:
+        loss_fn = torch.nn.CrossEntropyLoss()
 
     learning_rate = 5e-4
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
@@ -167,15 +183,20 @@ for i in range(1):
 
             # Predict in-sample labels and get training accuracy
             prediction = net(local_batch)
-            acc += utils.multi_accuracy(local_labels, prediction)
+            if is_binary:
+                local_labels = local_labels.unsqueeze(1).float()
+                acc += utils.multi_accuracy(local_labels, prediction)
+                loss = loss_fn(prediction, local_labels.float())
+            else:
+                acc += utils.multi_accuracy(local_labels, prediction)
+                loss = loss_fn(prediction, local_labels.long())
 
-            # Calculate loss and update weights
-            loss = loss_fn(prediction, local_labels.long())
+            # Update weights
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            # Calculate loss per epoch- loss_avgmeter.avg stores this value I think
+            # Calculate loss per epoch - loss_avgmeter.avg stores this value I think
             loss_avgmeter.update(loss.item(), batch_size)
         
         acc_avg = acc/total_items
@@ -198,9 +219,14 @@ for i in range(1):
 
             # Predict out-sample labels (samples network hasn't seen) and get validation accuracy
             pred_labels = net(local_batch)
-            acc += utils.multi_accuracy(local_labels, pred_labels)
+            if is_binary:
+                local_labels = local_labels.unsqueeze(1).float()
+                acc += utils.multi_accuracy(local_labels, prediction)
+                loss = loss_fn(prediction, local_labels.float())
+            else:
+                acc += utils.multi_accuracy(local_labels, prediction)
+                loss = loss_fn(prediction, local_labels.long())
 
-            loss = loss_fn(pred_labels, local_labels.long())
             loss_avgmeter.update(loss.item(), batch_size)
 
         print("Step 3 - Calcuating loss/accuracy")
@@ -209,14 +235,16 @@ for i in range(1):
         temp_stats = pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss'])
         val_stats = val_stats.append(temp_stats, ignore_index=True)
 
-        run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %train_stats[i]['loss'], '%2.3f' %acc_avg, '%d' % acc, '%d' % total_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
+        run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %train_stats.iloc[epoch]['loss'], '%2.3f' %acc_avg, '%d' % acc, '%d' % total_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
         summary_file = summary_file.append(run_file, ignore_index=True)
-        print(epoch)
-        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, train_stats[i]['loss'], acc_avg, acc, total_items))
+        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))
         scheduler.step(acc)
         loss_avgmeter.reset()
 
     # All epochs finished - Below is used for testing the network, plots and saving results
+
+    # Deleting unnecessary files 
+    os.remove(SAMPLE_STRINGS)
 
     if(args.plot_results):
         # List to store predictions and actual labels for confusion matrix
@@ -230,8 +258,13 @@ for i in range(1):
             local_batch = local_batch.unsqueeze(1).float()
 
             pred_labels = net(local_batch)
-            pred_labels_softmax = torch.softmax(pred_labels, dim=1)
-            _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
+            if is_binary:
+                actual_labels = actual_labels.unsqueeze(1).float()
+                pred_labels_sigmoid = torch.nn.Sigmoid(pred_labels)
+                pred_labels_tags = (pred_labels_sigmoid >= 0.5).eq(actual_labels)
+            else:
+                pred_labels_softmax = torch.softmax(pred_labels, dim=1)
+                _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
             y_pred_list.append(pred_labels_tags)
             y_target_list.append(local_labels)
 
@@ -242,5 +275,6 @@ for i in range(1):
                     graphs_title=args.sample_file, cm_title=args.sample_file)
 
     summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)
+    logger.info('\nAccuracy: %2.3f', val_stats.iloc[epoch]['accuracy'])
     logger.info('\nFinished at  ' + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
     

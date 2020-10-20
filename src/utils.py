@@ -226,10 +226,12 @@ def multi_accuracy(actual_labels, predicted_labels):
 
 def bin_accuracy(actual_labels, predicted_labels):
     """Computes the accuracy for multiple binary predictions"""
-    actual_labels = actual_labels.unsqueeze(1).float()
-    pred_labels_sigmoid = torch.nn.Sigmoid(predicted_labels)
+    #actual_labels = actual_labels.unsqueeze(1).float()
+    sig = torch.nn.Sigmoid()
+    pred_labels_sigmoid = sig(predicted_labels)
 
-    return (pred_labels_sigmoid >= 0.5).eq(actual_labels)
+    correct = (pred_labels_sigmoid >= 0.5).eq(actual_labels) 
+    return correct.sum()
 
 
 class AverageMeter(object):

@@ -218,7 +218,7 @@ for i in range(1):
             local_batch = local_batch.unsqueeze(1).float()
 
             # Predict out-sample labels (samples network hasn't seen) and get validation accuracy
-            pred_labels = net(local_batch)
+            prediction = net(local_batch)
             if is_binary:
                 local_labels = local_labels.unsqueeze(1).float()
                 acc += utils.multi_accuracy(local_labels, prediction)

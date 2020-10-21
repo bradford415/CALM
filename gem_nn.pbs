@@ -13,6 +13,7 @@ python src/RNA_main.py --max_epoch 100 \
                        --batch_size 16 \
                        --sample_file lung.emx.txt \
                        --label_file lung_sample_condition_no_sample_names.txt \
+                       --continuous_discrete continuous \
                        --plot_results True
 
 # Print the amount of resources used

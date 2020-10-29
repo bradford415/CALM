@@ -2,6 +2,7 @@ import multiprocessing
 import random
 import pandas as pd
 import csv
+import sys
 import glob
 import os
 import logging
@@ -9,7 +10,7 @@ import utils
 import argparse
 import dataset
 import torch
-import numpy as np
+import numpy as np 
 import math
 from datetime import datetime
 from torch.utils import data
@@ -70,6 +71,7 @@ RNA_matrix = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 args.seq_length = len(RNA_matrix.index)
 labels = utils.get_labels(LABEL_FILE)
 args.output_num_classes = len(labels)
+is_binary = False
 if len(labels) == 2:
     is_binary = True
     args.output_num_classess = 1
@@ -78,7 +80,7 @@ logger.info('Labels: ')
 for i in range(len(labels)):
     logger.info('       %d - %s', i, labels[i])
 
-# Puts genes that have any nan values at the end
+# Puts samples that have any nan values at the end
 is_NaN = RNA_matrix.isnull()
 row_has_NaN = is_NaN.any(axis=1)
 rows_with_NaN = RNA_matrix[row_has_NaN]
@@ -94,17 +96,14 @@ RNA_matrix_TR = RNA_matrix_TR.sort_index()
 #get rid of nans
 #RNA_matrix_TR = RNA_matrix_TR.replace(np.nan, '', regex=True)
 
-#save matrix to double check it looks like what I think it should look like
-#sample names down y axis, genes as column names
-#RNA_matrix_TR.to_csv("lung_format_check.emx", sep='\t')
-
 # Convert data to strings
 print("turning matrix into strings")
 strings = pd.DataFrame([])
 strings['string'] = RNA_matrix_TR.iloc[:,:].astype(str).apply(lambda y: ','.join(y), axis = 1)
 strings = strings.sort_index()
+samples_list = strings.index.tolist()
 
-print("saving string file")
+# Removes column/row labels when saving to csv
 strings.to_csv(SAMPLE_STRINGS, sep='\t', index=False, header=False)
 print("done saving string file")
 
@@ -114,7 +113,7 @@ f1 = open(NORMALIZED_SAMPLE, 'w+')
 
 f = f.readlines()
 
-for j in f:
+for index, j in enumerate(f):
     j = j.rstrip('\n')
     j = j.split(',')
     sample_data = ([float(i) for i in j])
@@ -123,12 +122,11 @@ for j in f:
     if args.continuous_discrete == "continuous":
         sample_data = utils.NormalizeData(sample_data, 0, 9)
     sample_data = sample_data.astype(int)
+    f1.write(str(samples_list[index]) + " ")
     for h in sample_data:
         f1.write(str(h))
     f1.write('\n')
 f1.close()
-
-
 
 for i in range(1):
 

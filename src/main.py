@@ -13,13 +13,97 @@ import torch
 import preprocessing
 import numpy as np 
 from datetime import datetime
-from plots import plot
+from plots import Plotter
 from torch.utils import data
 from definitions import INPUT_DIR
 from definitions import OUTPUT_DIR
 
 
-#def train():
+def train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, train_stats):
+    """
+     Train the network and collect accuracy and loss in dataframes. Different loss functions will be 
+     used if it is a binary prediction or multiclass prediction.
+    """
+    model.train() # Set model to train mode (default mode)
+
+    total_items = 0
+    acc = 0.0
+    loss= 0.0
+    for data, target in train_generator:
+        total_items += target.shape[0] 
+        data = data.unsqueeze(1).float()
+        optimizer.zero_grad() # Zero out the gradients
+        prediction = model(data)
+        #if is_binary:
+        #    target = target.unsqueeze(1).float()
+        #    acc += utils.multi_accuracy(target, prediction)
+        #    loss = loss_fn(prediction, target.float())
+        #else:
+        acc += utils.multi_accuracy(target, prediction)
+        loss = loss_fn(prediction, target.long())
+        loss.backward() # Compute gradients
+        optimizer.step() # Upate weights
+
+    # Calculate loss per epoch
+    loss_avgmeter.update(loss.item(), batch_size)
+    acc_avg = acc/total_items
+    train_stats.append(pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+
+
+def test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, test_stats, train_stats, logger):
+    """
+     Test the model with the test dataset. Only doing forward passes, backpropagrations should not be applied
+    """
+    model.eval() # Set model to eval mode - required for dropout and norm layers
+
+    total_items = 0
+    acc = 0.0
+    loss= 0.0
+    loss_avgmeter.reset()
+    with torch.no_grad():
+        for data, target in test_generator:
+            total_items += target.shape[0]
+            data = data.unsqueeze(1).float()
+            prediction = model(data)
+            #if is_binary:
+            #    target = target.unsqueeze(1).float()
+            #    acc += utils.multi_accuracy(target, prediction)
+            #    loss = loss_fn(prediction, target.float())
+            #else:
+            acc += utils.multi_accuracy(target, prediction)
+            loss = loss_fn(prediction, target.long())
+            loss_avgmeter.update(loss.item(), batch_size)
+
+    loss_avgmeter.update(loss.item(), batch_size)
+    acc_avg = acc/total_items
+    test_stats.append(pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+
+    # write training log to the log file
+    logger.info('Epoch: %d Training Loss: %2.5f Test Accuracy : %2.3f Accurate Count: %d Total Items :%d '% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))
+    loss_avgmeter.reset()
+
+
+def forward(model, test_generator, predict_list, target_list):
+    """One forward pass through the model. Mostly used to get confusion matrix values"""
+    with torch.no_grad():
+        for data, target in test_generator:
+
+            data = data.unsqueeze(1).float()
+            prediction = model(data)
+            #if is_binary:
+            #    actual_labels = actual_labels.unsqueeze(1).float()
+            #    pred_labels_sigmoid = torch.nn.Sigmoid(pred_labels)
+            #    pred_labels_tags = (pred_labels_sigmoid >= 0.5).eq(actual_labels)
+            #else:
+            prediction_softmax = torch.softmax(prediction, dim=1)
+            _, prediction_tags = torch.max(prediction_softmax, dim=1)
+            
+            predict_list.append(prediction_tags)
+            target_list.append(target)
+            
+    predict_list = [j for val in predict_list for j in val]
+    target_list = [j for val in target_list for j in val]
+
 
 def main():
     # Maybe delete this ?
@@ -28,7 +112,7 @@ def main():
     parser = argparse.ArgumentParser(description='classifier')
     parser.add_argument('--sample_file', type=str, default='lung.emx.txt', help="the name of the GEM organized by samples (columns) by genes (rows)")
     parser.add_argument('--label_file', type=str, default='sample_condition.txt', help="name of the label file: two columns that maps the sample to the label")
-    parser.add_argument('--output_name', type=str, default='tissue-1', help="name of the output directory to store the output files")
+    parser.add_argument('--output_name', type=str, default='tissue-run-1', help="name of the output directory to store the output files")
     #parser.add_argument('--overwrite_output', type=bool, default=False, help="overwrite the output directory file if it already exists")
     parser.add_argument('--batch_size', type=int, default=16, help="size of batches to split data")
     parser.add_argument('--max_epoch', type=int, default=100, help="number of passes through a dataset")
@@ -96,6 +180,10 @@ def main():
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, patience=50)
     loss_fn = torch.nn.CrossEntropyLoss()#(weight=class_weights)
 
+    #if is_binary:
+    #    loss_fn = torch.nn.BCEWithLogitsLoss()
+    #else:
+
     logger.info('Number of samples: %d\n', args.seq_length)
     logger.info('Labels: ')
     for i in range(len(labels)):
@@ -123,18 +211,7 @@ def main():
     test_generator = data.DataLoader(test_dataset, batch_size=batch_size, drop_last=False)
     # drop_last=True would drop the last batch if the sample size is not divisible by the batch size
 
-    ## PICK UP HERE TOMORROW - IM TIRED ##################################################################3
-    preprocessing.process_inputs(matrix_df, args)
-    train_data, val_data = preprocessing.parse_data(sample_file=NORMALIZED_SAMPLE,
-                                                        label_file=LABEL_FILE,
-                                                        input_seq_length=args.seq_length,
-                                                        input_num_classes=args.input_num_classes,
-                                                        output_num_classes=args.output_num_classes)
-    train_dataset = dataset.Dataset(train_data, input_num_classes=args.input_num_classes,
-                                        output_num_classes=args.output_num_classes)
-    val_dataset = dataset.Dataset(val_data, input_num_classes=args.input_num_classes,
-                                    output_num_classes=args.output_num_classes)
-    logger.info('\nTraining size: %d \nValidation size: %d', len(train_dataset), len(val_dataset))
+    logger.info('\nTraining size: %d \nTesting size: %d', len(train_dataset), len(test_dataset))
     net = utils.Net(input_seq_length=args.seq_length,
                    input_num_classes=args.input_num_classes,
                    output_num_classes=args.output_num_classes)
@@ -142,102 +219,33 @@ def main():
     # drop_last adjusts the last batch size when the given batch size is not divisible by the number of samples
     batch_size = args.batch_size
     training_generator = data.DataLoader(train_dataset, batch_size=batch_size, drop_last=False)
-    val_generator = data.DataLoader(val_dataset, batch_size=batch_size, drop_last=False)
-    if is_binary:
-        loss_fn = torch.nn.BCEWithLogitsLoss()
-    else:
-        loss_fn = torch.nn.CrossEntropyLoss()
-    learning_rate = 5e-4
-    optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer,verbose=True, patience=50)
-    loss_avgmeter = utils.AverageMeter()
+    val_generator = data.DataLoader(test_dataset, batch_size=batch_size, drop_last=False)
 
+    # Create variables to store accuracy and loss
+    loss_avgmeter = utils.AverageMeter()
+    loss_avgmeter.reset()
     summary_file = pd.DataFrame([], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
     train_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
-    val_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
+    test_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
 
+    # Train and test the model
     for epoch in range(args.max_epoch):
-        total_items = 0
-        acc = 0.0
-        # Training 
-        print("Step 1 - Training the network")
-        for local_batch, local_labels in training_generator:
-            total_items += local_labels.shape[0] 
-            local_batch = local_batch.unsqueeze(1).float()
-            # Predict in-sample labels and get training accuracy
-            prediction = net(local_batch)
-            if is_binary:
-                local_labels = local_labels.unsqueeze(1).float()
-                acc += utils.multi_accuracy(local_labels, prediction)
-                loss = loss_fn(prediction, local_labels.float())
-            else:
-                acc += utils.multi_accuracy(local_labels, prediction)
-                loss = loss_fn(prediction, local_labels.long())
-            # Update weights
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            # Calculate loss per epoch - loss_avgmeter.avg stores this value I think
-            loss_avgmeter.update(loss.item(), batch_size)
-        acc_avg = acc/total_items
-        temp_stats = pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss'])
-        train_stats = train_stats.append(temp_stats, ignore_index=True)
-        total_items = 0
-        correct = 0
-        acc = 0.0
-        acc_avg = 0.0
-        loss_avgmeter.reset()
-        # Validation
-        print("Step 2 - Testing the network")
-        for local_batch, local_labels in val_generator:
-            total_items += local_labels.shape[0]
-            local_batch = local_batch.unsqueeze(1).float()
-            # Predict out-sample labels (samples network hasn't seen) and get validation accuracy
-            prediction = net(local_batch)
-            if is_binary:
-                local_labels = local_labels.unsqueeze(1).float()
-                acc += utils.multi_accuracy(local_labels, prediction)
-                loss = loss_fn(prediction, local_labels.float())
-            else:
-                acc += utils.multi_accuracy(local_labels, prediction)
-                loss = loss_fn(prediction, local_labels.long())
-            loss_avgmeter.update(loss.item(), batch_size)
-        print("Step 3 - Saving loss/accuracy")
-        acc_avg = acc/total_items
-        temp_stats = pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss'])
-        val_stats = val_stats.append(temp_stats, ignore_index=True)
-        run_file = pd.DataFrame([['%d' %epoch, '%2.5f' %train_stats.iloc[epoch]['loss'], '%2.3f' %acc_avg, '%d' % acc, '%d' % total_items]], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
-        summary_file = summary_file.append(run_file, ignore_index=True)
-        print('\nEpoch: %d Training Loss: %2.5f Accuracy : %2.3f Accurate Count: %d Total Items :%d \n'% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))
-        scheduler.step(acc)
-        loss_avgmeter.reset()
+        train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, train_stats)
+        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, test_stats)
+        scheduler.step()
+
     # All epochs finished - Below is used for testing the network, plots and saving results
-    # Deleting unnecessary files 
-    os.remove(SAMPLE_STRINGS)
     if(args.plot_results):
-        # List to store predictions and actual labels for confusion matrix
-        y_pred_list = []
-        y_target_list = []
-        # Test validation set to get confusion matrix values
-        for local_batch, local_labels in val_generator:
-            total_items += local_labels.shape[0]
-            local_batch = local_batch.unsqueeze(1).float()
-            pred_labels = net(local_batch)
-            if is_binary:
-                actual_labels = actual_labels.unsqueeze(1).float()
-                pred_labels_sigmoid = torch.nn.Sigmoid(pred_labels)
-                pred_labels_tags = (pred_labels_sigmoid >= 0.5).eq(actual_labels)
-            else:
-                pred_labels_softmax = torch.softmax(pred_labels, dim=1)
-                _, pred_labels_tags = torch.max(pred_labels_softmax, dim=1)
-            y_pred_list.append(pred_labels_tags)
-            y_target_list.append(local_labels)
-        y_pred_list = [j for val in y_pred_list for j in val]
-        y_target_list = [j for val in y_target_list for j in val]
-        plots.plot(train_stats, val_stats, y_target_list, y_pred_list, labels,
-                    graphs_title=args.sample_file, cm_title=args.sample_file)
-    summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)
-    logger.info('\nAccuracy: %2.3f', val_stats.iloc[epoch]['accuracy'])
+        # Lists to store confusion matrix values
+        predict_list = []
+        target_list = []
+        forward(model, test_generator, predict_list, target_list)
+
+        graphs.accuracy(train_stats, test_stats, graphs_title=args.sample_file)
+        graphs.confusion(predict_list, target_list, labels, cm_title=args.sample_file)
+
+    #summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)
+    logger.info('\nFinal Accuracy: %2.3f', test_stats.iloc[epoch]['accuracy'])
     logger.info('\nFinished at  ' + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
 
 if __name__ == '__main__':

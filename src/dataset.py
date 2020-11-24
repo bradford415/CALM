@@ -9,11 +9,7 @@ class Dataset(data.Dataset):
 
         data - normalized sample data 2 indexes wide the first index is the sample data and
                the second index is the label
-        input_num_classes - represents the normalization range to create one-hot labels. 
-                            Example before this funciton is called the data is normalized 
-                            between 0-9 => 10 values, so if the data value is 5 a one-hot tensor of value 
-                            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] will be created, this variable has 
-                            NOTHING to do with the number of labels in the dataset.
+        input_num_classes - To be used later. 
         output_num_classes - number of labels that are being classified 
         """
         self.input_num_classes  = input_num_classes
@@ -34,4 +30,4 @@ class Dataset(data.Dataset):
                                             num_classes=self.input_num_classes),
                 torch.tensor(self.data_output[index]))
         """
-        
+        return (torch.tensor(self.data_input[index]), torch.tensor(self.data_output[index]))

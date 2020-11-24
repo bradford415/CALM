@@ -1,10 +1,9 @@
-
-from torch.utils import data
 import torch
+from torch.utils import data
 
 class Dataset(data.Dataset):
   'Characterizes a dataset for PyTorch'
-  def __init__(self, data, input_num_classes, output_num_classes):
+  def __init__(self, data, input_num_classes=10, output_num_classes=4):
         """
         Initialization
 
@@ -30,13 +29,9 @@ class Dataset(data.Dataset):
   def __getitem__(self, index):
         'Generates one sample of data'
         # Select sample
-
-        '''
-        return (torch.nn.functional.one_hot(torch.tensor(self.data_input[index]),
-                                            num_classes=self.input_num_classes),
-                torch.nn.functional.one_hot(torch.tensor(self.data_output[index]),
-                                            num_classes=self.output_num_classes),)
-        '''
+        """
         return (torch.nn.functional.one_hot(torch.tensor(self.data_input[index]),
                                             num_classes=self.input_num_classes),
                 torch.tensor(self.data_output[index]))
+        """
+        

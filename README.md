@@ -65,6 +65,16 @@ python src/main.py --sample_file lung.emx.txt \
                    --plot_results True \
                    --use_gpu False
 ```
+- sample_file
+- label_file
+- output_name
+- max_epoch
+- batch_size
+- learning_rate
+- test_split
+- continous_discrete
+- plot_results
+- use_gpu
 
 ### Input Files
 Move the GEM file and labels file into the 'input' directory. Currently, the GEM file must be named 'lung.emx.txt' and the label file must be named 'lung_sample_condition_no_sample_names.txt'

@@ -104,6 +104,7 @@ The label file contains two columns, seperated by a space or tab with no header.
 | Gene3         | 11.265        | 3.625         | 5.359         |
 | Gene4         | 7.562         | 5.359         | 5.359         |
 #### Label File
+| ------------- | --------------- |
 | Sample1       | Cancerous       |
 | Sample2       | Indeterminate   |
 | Sample3       | Indeterminate   |

@@ -1,7 +1,7 @@
 # Classification Algorithm for Labeled Matrices
-A multilayer perceptron neural network used to classify three or more labels through gene expression implemented in PyTorch. 
+A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Because many biological tools output matrices with the features as rows and sample number as columns, this proejct takes the same format.
 
-This project takes two input files, a gene expression matrix (GEM) and text file which lists the correct labels in one column. The GEM is transposed to allign with the label file, 80% of the samples are used to train the neural network, and then the network is tested with the last 20% of samples.
+The goal of this project is to create a 'general purpose classifier' that will learn the labels supplied to it using continous or discrete data. The project will take two files, a sample file and label file, and hyperparamteters specified by the user as command-line arguments. Some of these hyperparamters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifer. 
 
 ## Requirements
 - torch

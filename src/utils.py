@@ -6,8 +6,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import pandas as pd
-from definitions import INPUT_DIR
-from definitions import OUTPUT_DIR
 
 class Net(nn.Module):
     def __init__(self,  input_seq_length, input_num_classes, output_num_classes):

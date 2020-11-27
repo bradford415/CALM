@@ -8,7 +8,6 @@ import logging
 import argparse
 import utils
 import dataset
-import plots
 import torch
 import preprocessing
 import numpy as np 
@@ -19,7 +18,7 @@ from definitions import INPUT_DIR
 from definitions import OUTPUT_DIR
 
 
-def train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, train_stats):
+def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats):
     """
      Train the network and collect accuracy and loss in dataframes. Different loss functions will be 
      used if it is a binary prediction or multiclass prediction.
@@ -30,8 +29,9 @@ def train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size,
     acc = 0.0
     loss= 0.0
     for data, target in train_generator:
-        total_items += target.shape[0] 
         data = data.unsqueeze(1).float()
+        data, target = data.to(device), target.to(device)
+        total_items += target.shape[0] 
         optimizer.zero_grad() # Zero out the gradients
         prediction = model(data)
         #if is_binary:
@@ -45,12 +45,12 @@ def train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size,
         optimizer.step() # Upate weights
 
     # Calculate loss per epoch
-    loss_avgmeter.update(loss.item(), batch_size)
+    loss_meter.update(loss.item(), batch_size)
     acc_avg = acc/total_items
-    train_stats.append(pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+    train_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
 
 
-def test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, test_stats, train_stats, logger):
+def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger):
     """
      Test the model with the test dataset. Only doing forward passes, backpropagrations should not be applied
     """
@@ -59,11 +59,12 @@ def test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, l
     total_items = 0
     acc = 0.0
     loss= 0.0
-    loss_avgmeter.reset()
+    loss_meter.reset()
     with torch.no_grad():
         for data, target in test_generator:
-            total_items += target.shape[0]
             data = data.unsqueeze(1).float()
+            data, target = data.to(device), target.to(device)
+            total_items += target.shape[0]
             prediction = model(data)
             #if is_binary:
             #    target = target.unsqueeze(1).float()
@@ -72,23 +73,25 @@ def test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, l
             #else:
             acc += utils.multi_accuracy(target, prediction)
             loss = loss_fn(prediction, target.long())
-            loss_avgmeter.update(loss.item(), batch_size)
+            loss_meter.update(loss.item(), batch_size)
 
-    loss_avgmeter.update(loss.item(), batch_size)
+    loss_meter.update(loss.item(), batch_size)
     acc_avg = acc/total_items
-    test_stats.append(pd.DataFrame([[acc_avg, loss_avgmeter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+    test_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
 
     # write training log to the log file
     logger.info('Epoch: %d Training Loss: %2.5f Test Accuracy : %2.3f Accurate Count: %d Total Items :%d '% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))
-    loss_avgmeter.reset()
+    loss_meter.reset()
 
 
-def forward(model, test_generator, predict_list, target_list):
-    """One forward pass through the model. Mostly used to get confusion matrix values"""
+def forward(model, device, test_generator, predict_list, target_list):
+    """
+     One forward pass through the model. mostly used to get confusion matrix values
+    """
     with torch.no_grad():
         for data, target in test_generator:
-
             data = data.unsqueeze(1).float()
+            data, target = data.to(device), target.to(device)
             prediction = model(data)
             #if is_binary:
             #    actual_labels = actual_labels.unsqueeze(1).float()
@@ -98,8 +101,8 @@ def forward(model, test_generator, predict_list, target_list):
             prediction_softmax = torch.softmax(prediction, dim=1)
             _, prediction_tags = torch.max(prediction_softmax, dim=1)
             
-            predict_list.append(prediction_tags)
-            target_list.append(target)
+            predict_list.append(prediction_tags.to('cpu'))
+            target_list.append(target.to('cpu'))
             
     predict_list = [j for val in predict_list for j in val]
     target_list = [j for val in target_list for j in val]
@@ -117,11 +120,10 @@ def main():
     parser.add_argument('--batch_size', type=int, default=16, help="size of batches to split data")
     parser.add_argument('--max_epoch', type=int, default=100, help="number of passes through a dataset")
     parser.add_argument('--learning_rate', type=int, default=0.001, help="controls the rate at which the weights of the model update")
-    parser.add_argument('--test_split', type=int, default=0.3, help="percentage of test data, the train data will be the remaining data")
-    #parser.add_argument('--input_num_classes', type=int, default=10) # binning value, will come back to later when working with discrete data
+    parser.add_argument('--test_split', type=int, default=0.3, help="percentage of test data, the train data will be the remaining data. 30% -> 0.3")
     parser.add_argument('--continuous_discrete', type=str, default='continuous', help="type of data in the sample file, typically RNA will be continous and DNA will be discrete")
     parser.add_argument('--plot_results', type=bool, default=True, help="plots the sample distribution, training/test accuracy/loss, and confusion matrix")
-
+    parser.add_argument('--use_gpu', type=bool, default=False, help="true to use a gpu, false to use the cpu - if the node does not have a gpu then it will use the cpu")
     args = parser.parse_args()
 
     #If data is discrete, data should only range between 0-3
@@ -153,10 +155,21 @@ def main():
         logger.error("       only continuous or discrete data can be processed.")
         sys.exit("\nCommand line argument error. Please check the log file.\n")
 
-    # Load matrix
+    # Intialize gpu usage if desired
+    use_cuda = torch.cuda.is_available()
+    device = torch.device("cuda" if use_cuda and args.use_gpu else "cpu")
+    train_kwargs = {'batch_size': 16}
+    test_kwargs = {'batch_size': 16}
+    if use_cuda:
+        cuda_kwargs = {'num_workers': 1,
+                       'pin_memory': True,
+                       'shuffle': True}
+        train_kwargs.update(cuda_kwargs)
+        test_kwargs.update(cuda_kwargs)
+
+    # Load matrix, labels/weights, and number of samples
     matrix_df = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
 
-    # Get number of samples and list of labels - log this information
     column_names = ("sample", "label")
     labels_df = pd.read_csv(LABEL_FILE, names=column_names, delim_whitespace=True, header=None)
     labels, class_weights = preprocessing.labels_and_weights(labels_df)
@@ -166,7 +179,7 @@ def main():
     #    is_binary = True
     #    args.output_num_classess = 1
 
-    # Define paramters
+    # Define model paramters
     batch_size = args.batch_size
     max_epoch = args.max_epoch
     learning_rate = args.learning_rate #5e-4
@@ -175,7 +188,7 @@ def main():
 
     # Setup model
     model = utils.Net(input_seq_length=num_features,
-                  output_num_classes=num_classes)
+                  output_num_classes=num_classes).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, patience=50)
     loss_fn = torch.nn.CrossEntropyLoss()#(weight=class_weights)
@@ -193,7 +206,7 @@ def main():
     val_min, val_max = np.nanmin(matrix_df), np.nanmax(matrix_df)
     matrix_df.fillna(val_min, inplace=True)
 
-    graphs = plots.Plotter(OUTPUT_DIR_FINAL)
+    graphs = Plotter(OUTPUT_DIR_FINAL)
     graphs.density(matrix_df)
 
     # Transposing matrix to align with label file
@@ -207,8 +220,8 @@ def main():
 
     train_dataset = dataset.Dataset(train_data_np)
     test_dataset = dataset.Dataset(test_data_np)
-    train_generator = data.DataLoader(train_dataset, batch_size=batch_size, drop_last=False)
-    test_generator = data.DataLoader(test_dataset, batch_size=batch_size, drop_last=False)
+    train_generator = data.DataLoader(train_dataset, **train_kwargs, drop_last=False)
+    test_generator = data.DataLoader(test_dataset, **test_kwargs, drop_last=False)
     # drop_last=True would drop the last batch if the sample size is not divisible by the batch size
 
     logger.info('\nTraining size: %d \nTesting size: %d', len(train_dataset), len(test_dataset))
@@ -222,24 +235,23 @@ def main():
     val_generator = data.DataLoader(test_dataset, batch_size=batch_size, drop_last=False)
 
     # Create variables to store accuracy and loss
-    loss_avgmeter = utils.AverageMeter()
-    loss_avgmeter.reset()
+    loss_meter = utils.AverageMeter()
+    loss_meter.reset()
     summary_file = pd.DataFrame([], columns=['Epoch', 'Training Loss', 'Accuracy', 'Accurate Count', 'Total Items'])
     train_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
     test_stats = pd.DataFrame([], columns=['accuracy', 'loss'])
 
     # Train and test the model
     for epoch in range(args.max_epoch):
-        train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, train_stats)
-        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_avgmeter, test_stats)
+        train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, train_stats)
+        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, test_stats)
         scheduler.step()
 
     # All epochs finished - Below is used for testing the network, plots and saving results
     if(args.plot_results):
-        # Lists to store confusion matrix values
         predict_list = []
         target_list = []
-        forward(model, test_generator, predict_list, target_list)
+        forward(model, device, test_generator, predict_list, target_list)
 
         graphs.accuracy(train_stats, test_stats, graphs_title=args.sample_file)
         graphs.confusion(predict_list, target_list, labels, cm_title=args.sample_file)

@@ -3,9 +3,6 @@ import pandas as pd
 import seaborn as sns
 import os
 from sklearn.metrics import confusion_matrix
-from definitions import INPUT_DIR
-from definitions import OUTPUT_DIR
-
 
 class Plotter:
 
@@ -25,8 +22,8 @@ class Plotter:
             plt.ylabel("Density")
             plt.savefig(os.path.join(self.graphs_directory,"density.pdf"))
 
-      def accuracy(self,train_stats, val_stats, graphs_title="Training vs Testing"):
-          """Plot training/validation accuracy/loss and Confusion Matrix"""
+      def accuracy(self, train_stats, val_stats, graphs_title="Training vs Testing"):
+          """Plot training/validation accuracy/loss"""
 
           # Plot Accuracy
           figure = plt.figure()
@@ -53,6 +50,7 @@ class Plotter:
           plt.savefig(os.path.join(self.graphs_directory, 'stats.pdf'))
       
       def confusion(self, y_target, y_predict, labels, cm_title="Confusion Matrix"):
+          """Plots confusion matrix after the model is trained"""
           # Set up dimensions for plots
           dimensions = (8.27,11.7)
           fig, axis = plt.subplots(figsize=dimensions)

@@ -7,7 +7,7 @@ def labels_and_weights(label_file_df):
     """ 
      Get list of unique sample labels and weights of the samples using
      the inverse of the count. Weights is a tensor to be compatible with
-     CrossEntropyLoss.
+     CrossEntropyLoss. 
     """
     labels_all = label_file_df.iloc[:,-1].astype(str).values.tolist()
     labels_unique = set(labels_all)

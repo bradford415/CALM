@@ -24,7 +24,6 @@ class Dataset(data.Dataset):
 
   def __getitem__(self, index):
         'Generates one sample of data'
-        # Select sample
         """
         return (torch.nn.functional.one_hot(torch.tensor(self.data_input[index]),
                                             num_classes=self.input_num_classes),

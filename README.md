@@ -96,13 +96,18 @@ There are two input files that are required, the sample file and the label file.
 
 The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate.
 
-#### Sample File                                                    #### Label File
-|               | Sample1       | Sample2       | Sample3       |  | Sample1       | Cancerous       |
-| ------------- | ------------- | ------------- | ------------- |  | Sample2       | Indeterminate   |
-| Gene1         | 5.359         | 19.359        | 5.359         |  | Sample3       | Indeterminate   |
-| Gene2         | 12.369        | 1.556         | 5.359         |  | Sample4       | Normal          |
+#### Sample File                                                  
+|               | Sample1       | Sample2       | Sample3       | 
+| ------------- | ------------- | ------------- | ------------- | 
+| Gene1         | 5.359         | 19.359        | 5.359         | 
+| Gene2         | 12.369        | 1.556         | 5.359         | 
 | Gene3         | 11.265        | 3.625         | 5.359         |
 | Gene4         | 7.562         | 5.359         | 5.359         |
+#### Label File
+| Sample1       | Cancerous       |
+| Sample2       | Indeterminate   |
+| Sample3       | Indeterminate   |
+| Sample4       | Normal          |
 
 ## Running
 To run the code, navigate to the root directory of the project and schedule the job with the following command

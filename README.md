@@ -1,7 +1,12 @@
 # Classification Algorithm for Labeled Matrices
 A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Because many biological tools output matrices with the features as rows and sample number as columns, this proejct takes the same format.
 
-The goal of this project is to create a 'general purpose classifier' that will learn the labels supplied to it using continous or discrete data. The project will take two files, a sample file and label file, and hyperparamteters specified by the user as command-line arguments. Some of these hyperparamters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifer. 
+The goal of this project is to create a 'general purpose classifier' that will learn the labels supplied to it using continous or discrete data. The project will take two files, a sample file and label file, and hyperparamteters specified by the user as command-line arguments. Some of these hyperparamters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifer.
+
+Currently, this project only supports continuous data which is being classified into 3 or more labels.
+
+## Considerations before beginning
+This project assumes
 
 ## Requirements
 - torch
@@ -87,8 +92,17 @@ python src/main.py --sample_file lung.emx.txt \
   - A True or False argument that determines whether to use a GPU or not. The project is only set up to use 1 GPU and for some reason with PyTorch only the p100 GPU model will work. 
 
 ### Input Files
-Move the GEM file and labels file into the 'input' directory. Currently, the GEM file must be named 'lung.emx.txt' and the label file must be named 'lung_sample_condition_no_sample_names.txt'
+There are two input files that are required, the sample file and the label file. The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can be anything but two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
 
+The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like.
+
+#### Sample File   
+|               | Sample1       | Sample2       | Sample3       |
+| ------------- | ------------- | ------------- | ------------- |
+| Gene1         | 5.359         | 19.359        | 5.359         |
+| Gene2         | 12.369        | 1.556         | 5.359         |
+| Gene3         | 11.265        | 3.625         | 5.359         |
+| Gene4         | 7.562         | 5.359         | 5.359         |
 ## Running
 To run the code, navigate to the root directory of the project and schedule the job with the following command
 ```

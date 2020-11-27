@@ -7,7 +7,7 @@ This project takes two input files, a gene expression matrix (GEM) and text file
 - torch
 - pandas
 - matplotlib
-- sklearn
+- scikit-learn
 - seaborn
 
 ## Palmetto Setup
@@ -27,7 +27,7 @@ Create a virtual environment with the required dependecies. If a virtual envrion
 ```bash
 module add anaconda3/5.10-gcc/8.3.1
 
-conda create -n myenv python=3.7 pytorch pandas matplotlib sklearn seaborn
+conda create -n myenv python=3.7 pytorch pandas matplotlib scikit-learn seaborn
 ```
 If you wish to use an existing environment, use the pip command to install each missing dependency inside your environment. Example:
 ```bash
@@ -65,9 +65,12 @@ python src/main.py --sample_file lung.emx.txt \
                    --plot_results True \
                    --use_gpu False
 ```
-- sample_file
+- sample_file 
+  - The name of the matrix file that contains the samples (columns) and genes (rows). Currently, only continuous expression values are supported such as a GEM. This file will be added to the input directory at a later step.
 - label_file
+  - The name of the label file. This file maps the sample, columns of the sample_file, to its label. This label is what the classifier attempts to predict. The label file will also be added to the input directory at a later step. 
 - output_name
+  - The name of the output directory that will be created to store all of the output files such as the density plot, accuracy graphs, confusion matrix and label classifcaiton results. This output directory will have the current time-stamp appended to it to prevent future runs from overwriting this directory.
 - max_epoch
 - batch_size
 - learning_rate

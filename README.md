@@ -76,11 +76,15 @@ python src/main.py --sample_file lung.emx.txt \
 - batch_size
   - The number of samples that is propagated into the model at one time until the end of the dataset is reached.The weights of the model update after each batch. 
 - learning_rate
-  - 
+  - Controls the rate at which the weights of the model update
 - test_split
+  - The percetage to split the full dataset into test data. A value of 0.3 would split the dataset up into 70% train and 30% test.  
 - continous_discrete
+  - The type of data in the sample file, this arugment only takes the values continous or discrete. Continous data represents an infinite amount of values (usually floats that are bounded or unbounded) and is plotted as a smooth line, an example of continous data is RNA expression values like a raw GEM. Discrete data represents a finite range of values and are typically integers, an example of this would be a DNA matrix which the data is only a value of 0, 1, 2, or 3. Currently, this project only supports continuous data.
 - plot_results
+  - A True or False argument that determines if visuals are created and should probably always be True. This will plot the distribution of the data, training/validation accuracy/loss, and the confusion matrix which shows how well the test data was classified. 
 - use_gpu
+  - A True or False argument that determines whether to use a GPU or not. The project is only set up to use 1 GPU and for some reason with PyTorch only the p100 GPU model will work. 
 
 ### Input Files
 Move the GEM file and labels file into the 'input' directory. Currently, the GEM file must be named 'lung.emx.txt' and the label file must be named 'lung_sample_condition_no_sample_names.txt'

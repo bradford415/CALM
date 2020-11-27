@@ -94,15 +94,16 @@ python src/main.py --sample_file lung.emx.txt \
 ### Input Files
 There are two input files that are required, the sample file and the label file. The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can be anything but two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
 
-The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like.
+The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate.
 
-#### Sample File   
-|               | Sample1       | Sample2       | Sample3       |
-| ------------- | ------------- | ------------- | ------------- |
-| Gene1         | 5.359         | 19.359        | 5.359         |
-| Gene2         | 12.369        | 1.556         | 5.359         |
+#### Sample File                                                    #### Label File
+|               | Sample1       | Sample2       | Sample3       |  | Sample1       | Cancerous       |
+| ------------- | ------------- | ------------- | ------------- |  | Sample2       | Indeterminate   |
+| Gene1         | 5.359         | 19.359        | 5.359         |  | Sample3       | Indeterminate   |
+| Gene2         | 12.369        | 1.556         | 5.359         |  | Sample4       | Normal          |
 | Gene3         | 11.265        | 3.625         | 5.359         |
 | Gene4         | 7.562         | 5.359         | 5.359         |
+
 ## Running
 To run the code, navigate to the root directory of the project and schedule the job with the following command
 ```

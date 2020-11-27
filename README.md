@@ -72,8 +72,11 @@ python src/main.py --sample_file lung.emx.txt \
 - output_name
   - The name of the output directory that will be created to store all of the output files such as the density plot, accuracy graphs, confusion matrix and label classifcaiton results. This output directory will have the current time-stamp appended to it to prevent future runs from overwriting this directory.
 - max_epoch
+  - The number of iterations to train the model for
 - batch_size
+  - The number of samples that is propagated into the model at one time until the end of the dataset is reached.The weights of the model update after each batch. 
 - learning_rate
+  - 
 - test_split
 - continous_discrete
 - plot_results

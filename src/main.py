@@ -226,11 +226,6 @@ def main():
     # drop_last=True would drop the last batch if the sample size is not divisible by the batch size
 
     logger.info('\nTraining size: %d \nTesting size: %d', len(train_dataset), len(test_dataset))
-    # Characterize dataset
-    # drop_last adjusts the last batch size when the given batch size is not divisible by the number of samples
-    batch_size = args.batch_size
-    training_generator = data.DataLoader(train_dataset, batch_size=batch_size, drop_last=False)
-    val_generator = data.DataLoader(test_dataset, batch_size=batch_size, drop_last=False)
 
     # Create variables to store accuracy and loss
     loss_meter = utils.AverageMeter()

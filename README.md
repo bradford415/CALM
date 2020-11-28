@@ -42,7 +42,7 @@ If you wish to use an existing environment, use the pip command to install each 
 ```bash
 source activate myenv
 
-pip install seaborn
+pip install seaborn pytorch pandas matplotlib scikit-learn
 ```
 
 ### PBS Script
@@ -129,7 +129,6 @@ sample2    indeterminate
 sample3    indeterminate  
 sample4    normal         
 ```
-
 
 ## Running
 To run the project, navigate to the root directory of the project and schedule the job with the following command.

@@ -150,8 +150,7 @@ The log file tracks several things:
 - The hyperparamters used for the network
 - The percentage of the dataset that was used for training and testing
 - Classification labels
-
-The log file also shows the training log which reports the classification accuracy and loss per epoch.
+- Training log which reports the classification accuracy and loss per epoch
 
 The density plot shows the distribution of the samples after the missing values have been replaced.
 

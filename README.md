@@ -98,7 +98,7 @@ The label file contains two columns, seperated by a space or tab with no header.
 
 #### Sample File                                                  
        
-       **Sample1 Sample2      Sample3**        
+       **Sample1** Sample2      Sample3**        
 Gene1    5.359     19.359    5.359       
 Gene2    12.369    1.556     5.359       
 Gene3    11.265    3.625     5.359      

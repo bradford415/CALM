@@ -96,7 +96,17 @@ python src/main.py --sample_file lung.emx.txt \
   - A True or False argument that determines whether to use a GPU or not. The project is only set up to use 1 GPU and for some reason with PyTorch only the p100 GPU model will work. 
 
 ### Input Files
-There are two plaintext input files that are required, the sample file and the label file. Move both of these files into the input directory. 
+There are two plaintext input files that are required, the sample file and the label file. Move both of these files into the input directory. Example commands to move input files into the input directory
+```bash
+# Start from inside the main project directory then move into the input directory
+cd input
+
+# Copy sample and label into this directory. My files are stored in my palmetto home directory inside a dataset directory.
+# The '~' specifies home directory and the '.' means the current directory
+# So we are copying the label and sample file from the home/dataset directory to the current directory we are in
+cp ~/dataset/sample_file.emx.txt .
+cp ~/dataset/label_file.txt .
+```
 
 The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can essentially be anything that describe the label. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
 
@@ -119,6 +129,7 @@ sample2    indeterminate
 sample3    indeterminate  
 sample4    normal         
 ```
+
 
 ## Running
 To run the project, navigate to the root directory of the project and schedule the job with the following command.

@@ -1,7 +1,7 @@
 # Classification Algorithm for Labeled Matrices
-A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Because many biological tools output matrices with the features as rows and sample number as columns, this proejct takes the same format.
+A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. 
 
-The goal of this project is to create a 'general purpose classifier' that will learn the labels supplied to it using continous or discrete data. The project will take two files, a sample file and label file, and hyperparamteters specified by the user as command-line arguments. Some of these hyperparamters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifer.
+This project aims to create a 'general purpose classifier' that will label continous or discrete data using supervised learning. The project will take two files, a sample file and label file, and hyperparamteters specified by the user as command-line arguments. Some of these hyperparamters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifer.
 
 Currently, this project only supports continuous data which is being classified into 3 or more labels.
 
@@ -128,12 +128,24 @@ qstat -u <user_name>
 ```
 
 ## Output
-When the job finishes, a new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, desnity plot, accuracy graphs, and confusion matrix.
+When the job finishes, a new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, density plot, accuracy graphs, and confusion matrix.
 
 The log file tracks several things:
 - The date and time of running the project
 - The hyperparamters used for the network
 - The percentage of the dataset that was used for training and testing
+- Classification labels
+The log file also shows the training log which reports the classification accuracy and loss per epoch.
+
+The density plot shows the distribution of the samples after the missing values have been replaced.
+
+The accuracy graphs show a visual of how well the model classified the samples per epoch.
+
+The confusion matrix shows how each sample in test dataset was classified after the model is trained.
+
+Below shows classification resultsfrom a run that used a gene expression matrix from lung tissue as the sample file. 70% of the samples was used to train the model and 30% was used to test the model.
+
+
 
 
 

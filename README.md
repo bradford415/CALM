@@ -145,7 +145,7 @@ The confusion matrix shows how each sample in test dataset was classified after 
 
 Below shows classification resultsfrom a run that used a gene expression matrix from lung tissue as the sample file. 70% of the samples was used to train the model and 30% was used to test the model.
 
-
-
+#### Density Plot
+![distribution](images/example_distribution.PNG)
 
 

@@ -92,24 +92,25 @@ python src/main.py --sample_file lung.emx.txt \
   - A True or False argument that determines whether to use a GPU or not. The project is only set up to use 1 GPU and for some reason with PyTorch only the p100 GPU model will work. 
 
 ### Input Files
-There are two input files that are required, the sample file and the label file. The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can be anything but two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
+There are two input files that are required, the sample file and the label file. The sample file is a plaintext file labeled matrix which has the features as rows and the sample as columns. The features can be anything that describe the lable. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
 
-The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate. Each cell is seperated by a space or tab, the table was just used for formatting purposes.
+The label file is a plaintext file that contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate. Each cell is seperated by a space or tab, the table was just used for formatting purposes.
 
 #### Sample File                                                  
-       
-       __Sample1 Sample2      Sample3__        
-Gene1    5.359     19.359    5.359       
-Gene2    12.369    1.556     5.359       
-Gene3    11.265    3.625     5.359      
-Gene4    7.562     5.359     5.359      
+```       
+         Sample1     Sample2    Sample3              
+Gene1    5.359       19.359     0.239       
+Gene2    12.369      1.556      8.934       
+Gene3    11.265      3.625      2.051      
+Gene4    7.562       5.359      5.359      
+```
 #### Label File
-|               |                 | 
-| ------------- | --------------- |
-| Sample1       | Cancerous       |
-| Sample2       | Indeterminate   |
-| Sample3       | Indeterminate   |
-| Sample4       | Normal          |
+```                       
+Sample1    Cancerous      
+Sample2    Indeterminate  
+Sample3    Indeterminate  
+Sample4    Normal         
+```
 
 ## Running
 To run the code, navigate to the root directory of the project and schedule the job with the following command

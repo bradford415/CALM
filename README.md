@@ -148,4 +148,10 @@ Below shows classification resultsfrom a run that used a gene expression matrix 
 #### Density Plot
 ![distribution](images/example_distribution.PNG)
 
+#### Accuracy Graph
+![accuracy](images/example_accuracy.png)
+
+#### Confusion Matrix
+![confusion](images/example_confusion.PNG)
+
 

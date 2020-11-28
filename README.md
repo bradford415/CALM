@@ -152,6 +152,6 @@ Below shows classification resultsfrom a run that used a gene expression matrix 
 ![accuracy](images/example_accuracy.png)
 
 #### Confusion Matrix
-![confusion](images/example_confusion.PNG)
+![confusion](images/example_confusion.png)
 
 

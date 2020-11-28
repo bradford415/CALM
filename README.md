@@ -5,6 +5,10 @@ This project aims to create a 'general purpose classifier' that will label conti
 
 Currently, this project only supports continuous data which is being classified into 3 or more labels.
 
+# TODO:
+## Explain how labels are collected, missing samples are taken care, the assumptions that the data is normalized, and explain the images at the bottom. Maybe resize the accuracy graph aswell.
+
+Don't call this section this
 ## Considerations before beginning
 This project assumes
 

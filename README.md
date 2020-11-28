@@ -5,7 +5,7 @@ This project aims to create a 'general purpose classifier' that will label conti
 
 Overview:
 1. Find unique samples from the label file
-  - test
+  1.test
 2. Merge
 
 Currently, this project only supports continuous data which is being classified into 3 or more labels.

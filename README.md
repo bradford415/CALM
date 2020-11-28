@@ -12,7 +12,7 @@ Overview:
 4. Train the model and evaluate the test set accuracy every epoch
 5. After the model is trained, perform a final forward pass using the test set to get confusion matrix values
 6. Save the output results in the output folder
-   6. Log file, distribution, accuracy graphs, confusion matrix
+   1. Log file, distribution, accuracy graphs, confusion matrix
 
 Currently, this project only supports continuous data which is being classified into 3 or more labels.
 

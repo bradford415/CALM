@@ -92,32 +92,35 @@ python src/main.py --sample_file lung.emx.txt \
   - A True or False argument that determines whether to use a GPU or not. The project is only set up to use 1 GPU and for some reason with PyTorch only the p100 GPU model will work. 
 
 ### Input Files
-There are two input files that are required, the sample file and the label file. The sample file is a plaintext file labeled matrix which has the features as rows and the sample as columns. The features can be anything that describe the lable. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
+There are two plaintext input files that are required, the sample file and the label file. Move both of these files into the input directory. 
 
-The label file is a plaintext file that contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate. Each cell is seperated by a space or tab, the table was just used for formatting purposes.
+The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can essentially be anything that describe the label. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
+
+The label file contains two columns, seperated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a sepecific label. 
+
+Below shows an example of what the sample file and label file should look like. This example is GEM that can be categorized into 3 categories/labels: Cancerous, Normal, Indeterminate. Each cell is seperated by a space or tab, the table was just used for formatting purposes. The number of samples in both files must match or else an error will be thrown.
 
 #### Sample File                                                  
 ```       
-         Sample1     Sample2    Sample3              
-Gene1    5.359       19.359     0.239       
-Gene2    12.369      1.556      8.934       
-Gene3    11.265      3.625      2.051      
-Gene4    7.562       5.359      5.359      
+         sample1     sample2    sample3              
+gene1    5.359       19.359     0.239       
+gene2    12.369      1.556      8.934       
+gene3    11.265      3.625      2.051      
+gene4    7.562       5.359      5.359      
 ```
 #### Label File
 ```                       
-Sample1    Cancerous      
-Sample2    Indeterminate  
-Sample3    Indeterminate  
-Sample4    Normal         
+sample1    cancerous      
+sample2    indeterminate  
+sample3    indeterminate  
+sample4    normal         
 ```
 
 ## Running
-To run the code, navigate to the root directory of the project and schedule the job with the following command
+To run the project, navigate to the root directory of the project and schedule the job with the following command.
 ```
-qsub lung_GEM_NN.pbs
+qsub classifier.pbs
 ```
-While the job is running, several files will be created in the input directory but these can be ignored. 
 
 To check the job status at any point, use this command
 ```
@@ -125,5 +128,12 @@ qstat -u <user_name>
 ```
 
 ## Output
-When the job finishes, pbs will create an output file which just shows genreal print and error statements, this file begins with 'lungGTEx'. The important output is the results file which is saved in the output directory and has the extention '.emx_results_test'. This file lists the training loss, accuracy of the model, number of predictions correct, and number of predictions per epoch. There is an example of the result file in the output directory, this file will be overwritten each time the project finishes.
+When the job finishes, a new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, desnity plot, accuracy graphs, and confusion matrix.
+
+The log file tracks several things:
+- The date and time of running the project
+- The hyperparamters used for the network
+- The percentage of the dataset that was used for training and testing
+
+
 

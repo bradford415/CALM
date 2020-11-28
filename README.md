@@ -172,13 +172,15 @@ The confusion matrix shows how each sample in test dataset was classified after 
 Below shows classification results from a run that used a gene expression matrix from lung tissue as the sample file. 70% of the samples was used to train the model and 30% was used to test the model.
 
 #### Density Plot
-The 
+The density plot shows the distribution of the sample file. The true distribution is somewhere around the 2nd peak. The first peak is created because missing data is replaced with the global minimum value. This sample file happened to have a lot of missing data.
 ![distribution](images/example_distribution.PNG)
 
 #### Accuracy Graph
+The accuracy graph shows the accuracy of the train set and test set per epoch. This gives a good visual representation of how the model trained over time.
 ![accuracy](images/example_accuracy.png)
 
 #### Confusion Matrix
+The confusion matrix shows how well the test set samples were classified. The x-axis shows what the predicted labels from the model were, and the y-axis shows what the actual labels were. Ideally, the confusion matrix should show a diagonal pattern which means that the samples were predicted very well.
 ![confusion](images/example_confusion.png)
 
 

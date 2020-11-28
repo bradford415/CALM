@@ -9,7 +9,7 @@ class Dataset(data.Dataset):
 
         data - normalized sample data 2 indexes wide the first index is the sample data and
                the second index is the label
-        input_num_classes - To be used later. 
+        input_num_classes - To be used later for discrete data.
         output_num_classes - number of labels that are being classified 
         """
         self.input_num_classes  = input_num_classes

@@ -8,7 +8,7 @@ import torch.nn.functional as F
 import pandas as pd
 
 class Net(nn.Module):
-    def __init__(self,  input_seq_length, input_num_classes, output_num_classes):
+    def __init__(self,  input_seq_length, output_num_classes):
         """Initialize model layers"""
         super(Net, self).__init__()
         self.input_seq_length = input_seq_length

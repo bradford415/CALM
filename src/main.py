@@ -119,8 +119,8 @@ def main():
     #parser.add_argument('--overwrite_output', type=bool, default=False, help="overwrite the output directory file if it already exists")
     parser.add_argument('--batch_size', type=int, default=16, help="size of batches to split data")
     parser.add_argument('--max_epoch', type=int, default=100, help="number of passes through a dataset")
-    parser.add_argument('--learning_rate', type=int, default=0.001, help="controls the rate at which the weights of the model update")
-    parser.add_argument('--test_split', type=int, default=0.3, help="percentage of test data, the train data will be the remaining data. 30% -> 0.3")
+    parser.add_argument('--learning_rate', type=float, default=0.001, help="controls the rate at which the weights of the model update")
+    parser.add_argument('--test_split', type=float, default=0.3, help="percentage of test data, the train data will be the remaining data. 30% -> 0.3")
     parser.add_argument('--continuous_discrete', type=str, default='continuous', help="type of data in the sample file, typically RNA will be continous and DNA will be discrete")
     parser.add_argument('--plot_results', type=bool, default=True, help="plots the sample distribution, training/test accuracy/loss, and confusion matrix")
     parser.add_argument('--use_gpu', type=bool, default=False, help="true to use a gpu, false to use the cpu - if the node does not have a gpu then it will use the cpu")
@@ -135,7 +135,7 @@ def main():
     SAMPLE_FILE = os.path.join(INPUT_DIR, args.sample_file)
     OUTPUT_DIR_FINAL = os.path.join(OUTPUT_DIR, "-" + args.output_name + "-" + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
     if not os.path.exists(OUTPUT_DIR_FINAL):
-        os.mkdirs(OUTPUT_DIR_FINAL)
+        os.makedirs(OUTPUT_DIR_FINAL)
 
     # Create log file to keep track of model parameters
     logging.basicConfig(filename=os.path.join(OUTPUT_DIR_FINAL,'classifier.log'),
@@ -168,10 +168,11 @@ def main():
         test_kwargs.update(cuda_kwargs)
 
     # Load matrix, labels/weights, and number of samples
-    matrix_df = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
-
     column_names = ("sample", "label")
+    matrix_df = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
     labels_df = pd.read_csv(LABEL_FILE, names=column_names, delim_whitespace=True, header=None)
+    assert len(labels_df) == len(matrix_df.columns) 
+    
     labels, class_weights = preprocessing.labels_and_weights(labels_df)
     args.output_num_classes = len(labels)
     #is_binary = False
@@ -197,7 +198,7 @@ def main():
     #    loss_fn = torch.nn.BCEWithLogitsLoss()
     #else:
 
-    logger.info('Number of samples: %d\n', args.seq_length)
+    logger.info('Number of samples: %d\n', len(labels_df))
     logger.info('Labels: ')
     for i in range(len(labels)):
         logger.info('       %d - %s', i, labels[i])
@@ -225,9 +226,6 @@ def main():
     # drop_last=True would drop the last batch if the sample size is not divisible by the batch size
 
     logger.info('\nTraining size: %d \nTesting size: %d', len(train_dataset), len(test_dataset))
-    net = utils.Net(input_seq_length=args.seq_length,
-                   input_num_classes=args.input_num_classes,
-                   output_num_classes=args.output_num_classes)
     # Characterize dataset
     # drop_last adjusts the last batch size when the given batch size is not divisible by the number of samples
     batch_size = args.batch_size

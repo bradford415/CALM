@@ -3,7 +3,7 @@ A multilayer perceptron (MLP) neural network used to classify labels using biolo
 
 This project aims to create a 'general purpose classifier' that will label continuous or discrete data using supervised learning. The project will take two files, a sample file and label file, and hyperparameters specified by the user as command-line arguments. Some of these hyperparameters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifier.
 
-Overview:
+__Overview:__
 1. Load in the sample file and fill in the missing values with the global minimum of the dataset
 1. Gather unique samples from the label file
    1. These will be the labels the model trys to classify the samples into

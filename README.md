@@ -1,16 +1,23 @@
 # Classification Algorithm for Labeled Matrices
-A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. 
+A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Useful for Gene Expression Matrices (GEM) and other data in matrix form.
 
 This project aims to create a 'general purpose classifier' that will label continuous or discrete data using supervised learning. The project will take two files, a sample file and label file, and hyperparameters specified by the user as command-line arguments. Some of these hyperparameters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifier.
 
+__Overview:__
+1. Load in the sample file and fill in the missing values with the global minimum of the dataset
+1. Gather unique samples from the label file
+   1. These will be the labels the model trys to classify the samples into
+2. Merge the sample file and label to align the samples with their corresponding label
+3. Split the data into a train and test set
+4. Train the model and evaluate the test set accuracy every epoch
+5. After the model is trained, perform a final forward pass using the test set to get confusion matrix values
+6. Save the output results in the output folder
+   1. Log file, distribution, accuracy graphs, confusion matrix
+
 Currently, this project only supports continuous data which is being classified into 3 or more labels.
 
-# TODO:
-## Explain how labels are collected, missing samples are taken care, the assumptions that the data is normalized, and explain the images at the bottom. Maybe resize the accuracy graph aswell.
-
-Don't call this section this
-## Considerations before beginning
-This project assumes
+## Note
+This project assumes that the data has already been normalized in the desired way. For example, the GEM used for the example at the bottom was already log transformed and quantile normalized.
 
 ## Requirements
 - torch
@@ -161,12 +168,18 @@ The confusion matrix shows how each sample in test dataset was classified after 
 Below shows classification results from a run that used a gene expression matrix from lung tissue as the sample file. 70% of the samples was used to train the model and 30% was used to test the model.
 
 #### Density Plot
+The density plot shows the distribution of the sample file. The true distribution is somewhere around the 2nd peak. The first peak is created because missing data is replaced with the global minimum value. This sample file happened to have a lot of missing data.
+
 ![distribution](images/example_distribution.PNG)
 
 #### Accuracy Graph
+The accuracy graph shows the accuracy of the train set and test set per epoch. This gives a good visual representation of how the model trained over time.
+
 ![accuracy](images/example_accuracy.png)
 
 #### Confusion Matrix
+The confusion matrix shows how well the test set samples were classified. The x-axis shows what the predicted labels from the model were, and the y-axis shows what the actual labels were. Ideally, the confusion matrix should show a diagonal pattern which means that the samples were predicted very well.
+
 ![confusion](images/example_confusion.png)
 
 

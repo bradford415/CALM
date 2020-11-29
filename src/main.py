@@ -12,6 +12,7 @@ import torch
 import preprocessing
 import numpy as np 
 from datetime import datetime
+from sklearn.metrics import f1_score
 from plots import Plotter
 from torch.utils import data
 from definitions import INPUT_DIR
@@ -236,18 +237,19 @@ def main():
 
     # Train and test the model
     for epoch in range(args.max_epoch):
-        train(model, device, train_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, train_stats)
+        train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
         test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, test_stats)
         scheduler.step()
 
     # All epochs finished - Below is used for testing the network, plots and saving results
     if(args.plot_results):
-        predict_list = []
-        target_list = []
-        forward(model, device, test_generator, predict_list, target_list)
+        y_predict_list = []
+        y_target_list = []
+        forward(model, device, test_generator, y_predict_list, y_target_list)
 
         graphs.accuracy(train_stats, test_stats, graphs_title=args.sample_file)
-        graphs.confusion(predict_list, target_list, labels, cm_title=args.sample_file)
+        graphs.confusion(y_predict_list, y_target_list, labels, cm_title=args.sample_file)
+        logger.info("\nf1 score: %0.2f" % (f1_score(y_target_list, y_predict_list, average="weighted")))
 
     #summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)
     logger.info('\nFinal Accuracy: %2.3f', test_stats.iloc[epoch]['accuracy'])

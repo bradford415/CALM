@@ -7,7 +7,7 @@ from sklearn.metrics import confusion_matrix
 class Plotter:
 
       def __init__(self, output_name):
-              self.graphs_directory = os.mkdirs(os.path.join(output_name, "graphs"))
+              self.graphs_directory = os.makedirs(os.path.join(output_name, "graphs"))
 
       def density(self, data):
             """Plot distrbution after filling missing data"""

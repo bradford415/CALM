@@ -43,11 +43,11 @@ Create a virtual environment with the required dependencies. If a virtual enviro
 ```bash
 module add anaconda3/5.10-gcc/8.3.1
 
-conda create -n myenv python=3.7 pytorch pandas matplotlib scikit-learn seaborn
+conda create -n calm python=3.7 pytorch pandas matplotlib scikit-learn seaborn
 ```
 If you wish to use an existing environment, use the pip command to install each missing dependency inside your environment. Example:
 ```bash
-source activate myenv
+source activate calm
 
 pip install seaborn pytorch pandas matplotlib scikit-learn
 ```
@@ -64,9 +64,9 @@ To use a gpu, replace the line above with the line below. For some reason the on
 select=1:ncpus=4:mem=16gb:ngpus=1:gpu_model=p100:interconnect=fdr,walltime=2:00:00
 ```
 
-Next, change the virtual environment being used. The default environment is 'myenv'. Change the line below to use the virtual env you created or modified.
+Next, change the virtual environment being used. The default environment is 'calm'. Change the line below to use the virtual env you created or modified.
 ```
-source activate myenv
+source activate calm
 ```
 The rest of the pbs file calls the main python script, along with specifying the command line arguments. The most important command line arguments are '--sample_file', '--label_file', and '--output_name', these MUST be changed. The command line arguments are shown below, followed by a description of each.
 ```

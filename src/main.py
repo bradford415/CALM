@@ -51,6 +51,7 @@ def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_m
     acc_avg = acc/total_items
     train_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
 
+    return train_stats
 
 def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger):
     """
@@ -85,6 +86,8 @@ def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, 
     # write training log to the log file
     logger.info('Epoch: %d Training Loss: %2.5f Test Accuracy : %2.3f Accurate Count: %d Total Items :%d '% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))
     loss_meter.reset()
+
+    return test_stats
 
 
 def forward(model, device, test_generator, predict_list, target_list):
@@ -240,8 +243,8 @@ def main():
 
     # Train and test the model
     for epoch in range(args.max_epoch):
-        train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
-        test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
+        train_stats = train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
+        test_stats = test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
         scheduler.step()
 
     # All epochs finished - Below is used for testing the network, plots and saving results

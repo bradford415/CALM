@@ -10,7 +10,7 @@
 cd $PBS_O_WORKDIR
 
 module load anaconda3/5.1.0-gcc/8.3.1
-source activate myenv
+source activate calm
 
 python src/main.py --sample_file lung.emx.txt \
                    --label_file sample_condition.txt \

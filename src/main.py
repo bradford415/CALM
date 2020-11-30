@@ -57,6 +57,7 @@ def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, 
     """
     model.eval() # Set model to eval mode - required for dropout and norm layers
 
+    
     total_items = 0
     acc = 0.0
     loss= 0.0
@@ -108,6 +109,7 @@ def forward(model, device, test_generator, predict_list, target_list):
     predict_list = [j for val in predict_list for j in val]
     target_list = [j for val in target_list for j in val]
 
+    return predict_list, target_list
 
 def main():
     # Maybe delete this ?
@@ -134,7 +136,7 @@ def main():
     # Initialize file paths and create output folder
     LABEL_FILE = os.path.join(INPUT_DIR, args.label_file)
     SAMPLE_FILE = os.path.join(INPUT_DIR, args.sample_file)
-    OUTPUT_DIR_FINAL = os.path.join(OUTPUT_DIR, "-" + args.output_name + "-" + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
+    OUTPUT_DIR_FINAL = os.path.join(OUTPUT_DIR, args.output_name + "-" + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
     if not os.path.exists(OUTPUT_DIR_FINAL):
         os.makedirs(OUTPUT_DIR_FINAL)
 
@@ -192,7 +194,7 @@ def main():
     model = utils.Net(input_seq_length=num_features,
                   output_num_classes=num_classes).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, verbose=True, patience=50)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
     loss_fn = torch.nn.CrossEntropyLoss()#(weight=class_weights)
 
     #if is_binary:
@@ -226,7 +228,7 @@ def main():
     test_generator = data.DataLoader(test_dataset, **test_kwargs, drop_last=False)
     # drop_last=True would drop the last batch if the sample size is not divisible by the batch size
 
-    logger.info('\nTraining size: %d \nTesting size: %d', len(train_dataset), len(test_dataset))
+    logger.info('\nTraining size: %d \nTesting size: %d\n', len(train_dataset), len(test_dataset))
 
     # Create variables to store accuracy and loss
     loss_meter = utils.AverageMeter()
@@ -238,18 +240,18 @@ def main():
     # Train and test the model
     for epoch in range(args.max_epoch):
         train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
-        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, test_stats)
+        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
         scheduler.step()
 
     # All epochs finished - Below is used for testing the network, plots and saving results
     if(args.plot_results):
         y_predict_list = []
         y_target_list = []
-        forward(model, device, test_generator, y_predict_list, y_target_list)
+        y_predict_list, y_target_list = forward(model, device, test_generator, y_predict_list, y_target_list)
 
         graphs.accuracy(train_stats, test_stats, graphs_title=args.sample_file)
         graphs.confusion(y_predict_list, y_target_list, labels, cm_title=args.sample_file)
-        logger.info("\nf1 score: %0.2f" % (f1_score(y_target_list, y_predict_list, average="weighted")))
+        logger.info("\n\nf1 score: %0.2f" % (f1_score(y_target_list, y_predict_list, average="weighted")))
 
     #summary_file.to_csv(RESULTS_FILE, sep='\t', index=False)
     logger.info('\nFinal Accuracy: %2.3f', test_stats.iloc[epoch]['accuracy'])

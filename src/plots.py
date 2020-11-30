@@ -8,7 +8,7 @@ class Plotter:
 
       def __init__(self, output_name):
               self.graphs_directory = os.makedirs(os.path.join(output_name, "graphs"))
-
+              self.graphs_path = os.path.join(output_name, "graphs")
       def density(self, data):
             """Plot distrbution after filling missing data"""
             dimensions = (11.7, 8.27)
@@ -20,7 +20,7 @@ class Plotter:
             plt.title("Sample Distributions")
             plt.xlabel("Expression Level")
             plt.ylabel("Density")
-            plt.savefig(os.path.join(self.graphs_directory,"density.pdf"))
+            plt.savefig(os.path.join(self.graphs_path,"density.pdf"))
 
       def accuracy(self, train_stats, val_stats, graphs_title="Training vs Testing"):
           """Plot training/validation accuracy/loss"""
@@ -47,7 +47,7 @@ class Plotter:
           plot2.legend(["Training", "Validation"], loc="upper left")
       
           # Save plots into pdf
-          plt.savefig(os.path.join(self.graphs_directory, 'stats.pdf'))
+          plt.savefig(os.path.join(self.graphs_path, 'stats.pdf'))
       
       def confusion(self, y_target, y_predict, labels, cm_title="Confusion Matrix"):
           """Plots confusion matrix after the model is trained"""
@@ -62,4 +62,4 @@ class Plotter:
           axis.set_ylabel("Actual")
           axis.set_xlabel("Predicted")
           axis.set_title(cm_title)
-          sns_heatmap.figure.savefig(os.path.join(self.graphs_directory, "confusion_matrix.pdf"))
+          sns_heatmap.figure.savefig(os.path.join(self.graphs_path, "confusion_matrix.pdf"))

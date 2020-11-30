@@ -105,7 +105,7 @@ python src/main.py --sample_file lung.emx.txt \
 ### Input Files
 There are two plaintext input files that are required, the sample file and the label file.
 
-The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can essentially be anything that describe the label. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). 
+The sample file is a labeled matrix which has the features as rows and the sample as columns. The features can essentially be anything that describe the label. Two common features are genes with their expression levels (continuous), and genotypes corresponding to a number system (discrete). The samples begin at column 0 because that's how much most GEM's are formatted, so there will be a column at the end without a sample header. 
 
 The label file contains two columns, separated by a space or tab with no header. The first column lists the sample names, the second column maps the sample to a specific label. 
 
@@ -113,11 +113,11 @@ Below shows an example of what the sample file and label file should look like. 
 
 #### Sample File                                                  
 ```       
-         sample1     sample2    sample3              
-gene1    5.359       19.359     0.239       
-gene2    12.369      1.556      8.934       
-gene3    11.265      3.625      2.051      
-gene4    7.562       5.359      5.359      
+sample1    sample2    sample3              
+gene1      5.359      19.359     0.239       
+gene2      12.369     1.556      8.934       
+gene3      11.265     3.625      2.051      
+gene4      7.562      5.359      5.359      
 ```
 #### Label File
 ```                       
@@ -150,7 +150,7 @@ qstat -u <user_name>
 ```
 
 ## Output
-When the job finishes, a new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, density plot, accuracy graphs, and confusion matrix.
+When the job finishes, the pbs output file will say "RUN COMPLETED". If this does not appear then the job did not fully finish and the output file will not be complete. The pbs output file is in the root directory of the project and is named "classifier_out.o". If the job did not complete, errors can be found in this pbs output file and the classifer.log file, found in the output directory of the run. A new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, density plot, accuracy graphs, and confusion matrix.
 
 The log file tracks several things:
 - The date and time of running the project

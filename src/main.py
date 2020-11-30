@@ -4,6 +4,7 @@
 import pandas as pd
 import sys
 import os
+import warnings
 import logging
 import argparse
 import utils
@@ -258,4 +259,6 @@ def main():
     logger.info('\nFinished at  ' + str(datetime.today().strftime('%Y-%m-%d-%H:%M')))
 
 if __name__ == '__main__':
+    warnings.filterwarnings("ignore")
     main()
+    print("\nRUN COMPLETED")

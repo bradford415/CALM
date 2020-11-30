@@ -150,7 +150,7 @@ qstat -u <user_name>
 ```
 
 ## Output
-When the job finishes, a new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, density plot, accuracy graphs, and confusion matrix.
+When the job finishes, the pbs output file will say "RUN COMPLETED". If this does not appear then the job did not fully finish and the output file will not be complete. The pbs output file is in the root directory of the project and is named "classifier_out.o". A new directory is created in the output based on the '--output_name' command-line argument. This directory contains the log file, density plot, accuracy graphs, and confusion matrix.
 
 The log file tracks several things:
 - The date and time of running the project

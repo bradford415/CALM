@@ -153,7 +153,7 @@ def main():
     logger.info('Classifer log file for ' + args.sample_file + ' - Started on ' + str(datetime.today().strftime('%Y-%m-%d-%H:%M')) + '\n')
     logger.info('Batch size: %d', args.batch_size)
     logger.info('Number of epochs: %d', args.max_epoch)
-    logger.info('Learning Rate: %d', args.learning_rate)
+    logger.info('Learning Rate: %f', args.learning_rate)
     logger.info('Sample filename: ' + args.sample_file)
     logger.info('Output directory: ' + args.output_name)
 
@@ -264,4 +264,4 @@ def main():
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
     main()
-    print("\nRUN COMPLETED")
+    print("\nRUN COMPLETED\n\n")

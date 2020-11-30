@@ -1,0 +1,100 @@
+Classifer log file for lung.emx.txt - Started on 2020-11-30-11:05
+
+Batch size: 16
+Number of epochs: 75
+Learning Rate: 0
+Sample filename: lung.emx.txt
+Output directory: tissue-run-1
+Number of samples: 1415
+
+Labels: 
+       0 - GTEx_normal
+       1 - TCGA-LUAD
+       2 - TCGA-LUSC
+       3 - TCGA-NORMAL
+
+Training size: 990 
+Testing size: 425
+
+Epoch: 0 Training Loss: 0.79347 Test Accuracy : 0.812 Accurate Count: 345 Total Items :425 
+Epoch: 1 Training Loss: 0.77208 Test Accuracy : 0.887 Accurate Count: 377 Total Items :425 
+Epoch: 2 Training Loss: 0.48342 Test Accuracy : 0.885 Accurate Count: 376 Total Items :425 
+Epoch: 3 Training Loss: 0.29836 Test Accuracy : 0.918 Accurate Count: 390 Total Items :425 
+Epoch: 4 Training Loss: 0.15889 Test Accuracy : 0.882 Accurate Count: 375 Total Items :425 
+Epoch: 5 Training Loss: 0.26928 Test Accuracy : 0.878 Accurate Count: 373 Total Items :425 
+Epoch: 6 Training Loss: 0.20046 Test Accuracy : 0.953 Accurate Count: 405 Total Items :425 
+Epoch: 7 Training Loss: 0.03946 Test Accuracy : 0.972 Accurate Count: 413 Total Items :425 
+Epoch: 8 Training Loss: 0.07473 Test Accuracy : 0.854 Accurate Count: 363 Total Items :425 
+Epoch: 9 Training Loss: 0.30131 Test Accuracy : 0.908 Accurate Count: 386 Total Items :425 
+Epoch: 10 Training Loss: 0.02395 Test Accuracy : 0.932 Accurate Count: 396 Total Items :425 
+Epoch: 11 Training Loss: 0.48227 Test Accuracy : 0.932 Accurate Count: 396 Total Items :425 
+Epoch: 12 Training Loss: 0.25875 Test Accuracy : 0.944 Accurate Count: 401 Total Items :425 
+Epoch: 13 Training Loss: 0.08095 Test Accuracy : 0.960 Accurate Count: 408 Total Items :425 
+Epoch: 14 Training Loss: 0.03141 Test Accuracy : 0.955 Accurate Count: 406 Total Items :425 
+Epoch: 15 Training Loss: 0.01964 Test Accuracy : 0.946 Accurate Count: 402 Total Items :425 
+Epoch: 16 Training Loss: 0.00723 Test Accuracy : 0.960 Accurate Count: 408 Total Items :425 
+Epoch: 17 Training Loss: 0.04883 Test Accuracy : 0.896 Accurate Count: 381 Total Items :425 
+Epoch: 18 Training Loss: 0.13212 Test Accuracy : 0.962 Accurate Count: 409 Total Items :425 
+Epoch: 19 Training Loss: 0.02356 Test Accuracy : 0.958 Accurate Count: 407 Total Items :425 
+Epoch: 20 Training Loss: 0.00786 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 21 Training Loss: 0.00421 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 22 Training Loss: 0.00184 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 23 Training Loss: 0.00135 Test Accuracy : 0.960 Accurate Count: 408 Total Items :425 
+Epoch: 24 Training Loss: 0.00229 Test Accuracy : 0.955 Accurate Count: 406 Total Items :425 
+Epoch: 25 Training Loss: 0.00013 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 26 Training Loss: 0.00070 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 27 Training Loss: 0.00002 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 28 Training Loss: 0.04765 Test Accuracy : 0.951 Accurate Count: 404 Total Items :425 
+Epoch: 29 Training Loss: 0.00003 Test Accuracy : 0.972 Accurate Count: 413 Total Items :425 
+Epoch: 30 Training Loss: 0.00002 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 31 Training Loss: 0.00002 Test Accuracy : 0.972 Accurate Count: 413 Total Items :425 
+Epoch: 32 Training Loss: 0.00001 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 33 Training Loss: 0.00001 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 34 Training Loss: 0.00001 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 35 Training Loss: 0.00001 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 36 Training Loss: 0.00001 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 37 Training Loss: 0.00001 Test Accuracy : 0.969 Accurate Count: 412 Total Items :425 
+Epoch: 38 Training Loss: 0.00001 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 39 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 40 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 41 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 42 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 43 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 44 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 45 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 46 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 47 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 48 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 49 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 50 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 51 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 52 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 53 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 54 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 55 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 56 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 57 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 58 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 59 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 60 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 61 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 62 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 63 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 64 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 65 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 66 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 67 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 68 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 69 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 70 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 71 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 72 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 73 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+Epoch: 74 Training Loss: 0.00000 Test Accuracy : 0.967 Accurate Count: 411 Total Items :425 
+
+
+f1 score: 0.97
+
+Final Accuracy: 0.967
+
+Finished at  2020-11-30-11:18

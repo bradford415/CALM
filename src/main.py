@@ -49,7 +49,7 @@ def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_m
     # Calculate loss per epoch
     loss_meter.update(loss.item(), batch_size)
     acc_avg = acc/total_items
-    train_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+    train_stats = train_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
 
     return train_stats
 
@@ -81,7 +81,7 @@ def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, 
 
     loss_meter.update(loss.item(), batch_size)
     acc_avg = acc/total_items
-    test_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
+    test_stats = test_stats.append(pd.DataFrame([[acc_avg, loss_meter.avg]], columns=['accuracy', 'loss']), ignore_index=True)
 
     # write training log to the log file
     logger.info('Epoch: %d Training Loss: %2.5f Test Accuracy : %2.3f Accurate Count: %d Total Items :%d '% (epoch, train_stats.iloc[epoch]['loss'], acc_avg, acc, total_items))

@@ -241,7 +241,7 @@ def main():
     # Train and test the model
     for epoch in range(args.max_epoch):
         train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
-        test(model, device, test_generator, optimizer, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
+        test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
         scheduler.step()
 
     # All epochs finished - Below is used for testing the network, plots and saving results

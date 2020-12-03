@@ -41,7 +41,7 @@ git clone https://github.com/bradford415/CALM.git
 ### Anaconda Environment
 Create a virtual environment with the required dependencies. If a virtual environment already exists and meets these requirements, this step can be skipped.
 ```bash
-module add anaconda3/5.10-gcc/8.3.1
+module add anaconda3/5.1.0-gcc/8.3.1
 
 conda create -n calm python=3.7 pytorch pandas matplotlib scikit-learn seaborn
 ```

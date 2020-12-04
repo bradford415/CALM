@@ -113,11 +113,11 @@ Below shows an example of what the sample file and label file should look like. 
 
 #### Sample File                                                  
 ```       
-sample1    sample2    sample3              
-gene1      5.359      19.359     0.239       
-gene2      12.369     1.556      8.934       
-gene3      11.265     3.625      2.051      
-gene4      7.562      5.359      5.359      
+sample1    sample2    sample3    sample4              
+gene1      5.359      19.359     0.239       12.369
+gene2      12.369     1.556      8.934       3.625 
+gene3      11.265     3.625      2.051       5.359
+gene4      7.562      5.359      5.359       7.562
 ```
 #### Label File
 ```                       

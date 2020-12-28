@@ -6,8 +6,8 @@ This project aims to create a 'general purpose classifier' that will label conti
 __Overview:__
 1. Load in the sample file and fill in the missing values with the global minimum of the dataset
 1. Gather unique samples from the label file
-   1. These will be the labels the model trys to classify the samples into
-2. Merge the sample file and label to align the samples with their corresponding label
+   1. These will be the labels the model tries to classify the samples into
+2. Merge the sample file and label file to align the samples with their corresponding label
 3. Split the data into a train and test set
 4. Train the model and evaluate the test set accuracy every epoch
 5. After the model is trained, perform a final forward pass using the test set to get confusion matrix values

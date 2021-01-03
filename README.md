@@ -1,5 +1,5 @@
 # Classification Algorithm for Labeled Matrices
-A multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Useful for Gene Expression Matrices (GEM) and other data in matrix form.
+A basic multilayer perceptron (MLP) neural network used to classify labels using biological features such as gene expression or genotypes. Useful for Gene Expression Matrices (GEM) and other data in matrix form.
 
 This project aims to create a 'general purpose classifier' that will label continuous or discrete data using supervised learning. The project will take two files, a sample file and label file, and hyperparameters specified by the user as command-line arguments. Some of these hyperparameters include, batch size, learning rate, test split, continuous or discrete data, etc. Because no dataset is exactly the same, more command-line options will likely need to be added, such as number of hidden layers/neurons, to fully optimize this general purpose classifier.
 

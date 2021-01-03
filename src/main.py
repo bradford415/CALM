@@ -20,7 +20,7 @@ from definitions import INPUT_DIR
 from definitions import OUTPUT_DIR
 
 
-def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats):
+def train(model, device, is_binary, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats):
     """
      Train the network and collect accuracy and loss in dataframes. Different loss functions will be 
      used if it is a binary prediction or multiclass prediction.
@@ -36,13 +36,13 @@ def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_m
         total_items += target.shape[0] 
         optimizer.zero_grad() # Zero out the gradients
         prediction = model(data)
-        #if is_binary:
-        #    target = target.unsqueeze(1).float()
-        #    acc += utils.multi_accuracy(target, prediction)
-        #    loss = loss_fn(prediction, target.float())
-        #else:
-        acc += utils.multi_accuracy(target, prediction)
-        loss = loss_fn(prediction, target.long())
+        if is_binary:
+            target = target.unsqueeze(1).float()
+            acc += utils.bin_accuracy(target, prediction)
+            loss = loss_fn(prediction, target.float())
+        else:
+            acc += utils.multi_accuracy(target, prediction)
+            loss = loss_fn(prediction, target.long())
         loss.backward() # Compute gradients
         optimizer.step() # Upate weights
 
@@ -53,12 +53,11 @@ def train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_m
 
     return train_stats
 
-def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger):
+def test(model, device, is_binary, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger):
     """
      Test the model with the test dataset. Only doing forward passes, backpropagrations should not be applied
     """
     model.eval() # Set model to eval mode - required for dropout and norm layers
-
     
     total_items = 0
     acc = 0.0
@@ -70,13 +69,13 @@ def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, 
             data, target = data.to(device), target.to(device)
             total_items += target.shape[0]
             prediction = model(data)
-            #if is_binary:
-            #    target = target.unsqueeze(1).float()
-            #    acc += utils.multi_accuracy(target, prediction)
-            #    loss = loss_fn(prediction, target.float())
-            #else:
-            acc += utils.multi_accuracy(target, prediction)
-            loss = loss_fn(prediction, target.long())
+            if is_binary:
+                target = target.unsqueeze(1).float()
+                acc += utils.bin_accuracy(target, prediction)
+                loss = loss_fn(prediction, target.float())
+            else:
+                acc += utils.multi_accuracy(target, prediction)
+                loss = loss_fn(prediction, target.long())
             loss_meter.update(loss.item(), batch_size)
 
     loss_meter.update(loss.item(), batch_size)
@@ -90,7 +89,7 @@ def test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, 
     return test_stats
 
 
-def forward(model, device, test_generator, predict_list, target_list):
+def forward(model, device, is_binary, test_generator, predict_list, target_list):
     """
      One forward pass through the model. mostly used to get confusion matrix values
     """
@@ -99,13 +98,13 @@ def forward(model, device, test_generator, predict_list, target_list):
             data = data.unsqueeze(1).float()
             data, target = data.to(device), target.to(device)
             prediction = model(data)
-            #if is_binary:
-            #    actual_labels = actual_labels.unsqueeze(1).float()
-            #    pred_labels_sigmoid = torch.nn.Sigmoid(pred_labels)
-            #    pred_labels_tags = (pred_labels_sigmoid >= 0.5).eq(actual_labels)
-            #else:
-            prediction_softmax = torch.softmax(prediction, dim=1)
-            _, prediction_tags = torch.max(prediction_softmax, dim=1)
+            if is_binary:
+                actual_labels = actual_labels.unsqueeze(1).float()
+                pred_labels_sigmoid = torch.nn.Sigmoid(prediction)
+                prediction_tags = (pred_labels_sigmoid >= 0.5).eq(actual_labels)
+            else:
+                prediction_softmax = torch.softmax(prediction, dim=1)
+                _, prediction_tags = torch.max(prediction_softmax, dim=1)
             
             predict_list.append(prediction_tags.to('cpu'))
             target_list.append(target.to('cpu'))
@@ -178,32 +177,37 @@ def main():
     column_names = ("sample", "label")
     matrix_df = pd.read_csv(SAMPLE_FILE, sep='\t', index_col=[0])
     labels_df = pd.read_csv(LABEL_FILE, names=column_names, delim_whitespace=True, header=None)
-    assert len(labels_df) == len(matrix_df.columns) 
+
+
+    # Error checking for same number of samples in both files and samples are unique
+    samples_unique = set(labels_df.iloc[:,0])
+    assert len(labels_df) == len(matrix_df.columns)
+    assert len(labels_df) == len(samples_unique)
+
     
     labels, class_weights = preprocessing.labels_and_weights(labels_df)
     args.output_num_classes = len(labels)
-    #is_binary = False
-    #if len(labels) == 2:
-    #    is_binary = True
-    #    args.output_num_classess = 1
+    is_binary = False
+    if len(labels) == 2:
+        is_binary = True
+        args.output_num_classess = 1
 
     # Define model paramters
     batch_size = args.batch_size
     max_epoch = args.max_epoch
     learning_rate = args.learning_rate #5e-4
     num_features = len(matrix_df.index)
-    num_classes = len(labels)
 
     # Setup model
     model = utils.Net(input_seq_length=num_features,
-                  output_num_classes=num_classes).to(device)
+                  output_num_classes=args.output_num_classes).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
-    loss_fn = torch.nn.CrossEntropyLoss()#(weight=class_weights)
 
-    #if is_binary:
-    #    loss_fn = torch.nn.BCEWithLogitsLoss()
-    #else:
+    if is_binary:
+        loss_fn = torch.nn.BCEWithLogitsLoss()
+    else:
+        loss_fn = torch.nn.CrossEntropyLoss()#(weight=class_weights)
 
     logger.info('Number of samples: %d\n', len(labels_df))
     logger.info('Labels: ')
@@ -214,12 +218,15 @@ def main():
     val_min, val_max = np.nanmin(matrix_df), np.nanmax(matrix_df)
     matrix_df.fillna(val_min, inplace=True)
 
-    graphs = Plotter(OUTPUT_DIR_FINAL)
-    graphs.density(matrix_df)
-
     # Transposing matrix to align with label file
     matrix_transposed_df = matrix_df.T
-    train_data, test_data = preprocessing.split_data(matrix_transposed_df, labels_df, args.test_split, num_classes)
+
+    # Create density and tsne plot
+    graphs = Plotter(OUTPUT_DIR_FINAL)
+    graphs.density(matrix_df)
+    graphs.tsne(matrix_transposed_df, labels_df, labels, title=args.sample_file)
+
+    train_data, test_data = preprocessing.split_data(matrix_transposed_df, labels_df, args.test_split, args.output_num_classes)
 
     # Convert tuple of df's to tuple of np's
     # Allows the dataset class to access w/ data[][] instead of data[].iloc[]
@@ -243,15 +250,15 @@ def main():
 
     # Train and test the model
     for epoch in range(args.max_epoch):
-        train_stats = train(model, device, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
+        train_stats = train(model, device, is_binary, train_generator, optimizer, loss_fn, batch_size, loss_meter, train_stats)
         test_stats = test(model, device, test_generator, loss_fn, epoch, batch_size, loss_meter, test_stats, train_stats, logger)
         scheduler.step()
 
-    # All epochs finished - Below is used for testing the network, plots and saving results
+    # Training finished - Below is used for testing the network, plots and saving results
     if(args.plot_results):
         y_predict_list = []
         y_target_list = []
-        y_predict_list, y_target_list = forward(model, device, test_generator, y_predict_list, y_target_list)
+        y_predict_list, y_target_list = forward(model, device, is_binary, test_generator, y_predict_list, y_target_list)
 
         graphs.accuracy(train_stats, test_stats, graphs_title=args.sample_file)
         graphs.confusion(y_predict_list, y_target_list, labels, cm_title=args.sample_file)

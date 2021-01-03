@@ -3,12 +3,14 @@ import pandas as pd
 import seaborn as sns
 import os
 from sklearn.metrics import confusion_matrix
+from sklearn.manifold import TSNE
 
 class Plotter:
 
       def __init__(self, output_name):
               self.graphs_directory = os.makedirs(os.path.join(output_name, "graphs"))
               self.graphs_path = os.path.join(output_name, "graphs")
+
       def density(self, data):
             """Plot distrbution after filling missing data"""
             dimensions = (11.7, 8.27)
@@ -21,6 +23,26 @@ class Plotter:
             plt.xlabel("Expression Level")
             plt.ylabel("Density")
             plt.savefig(os.path.join(self.graphs_path,"density.pdf"))
+
+      def tsne(self, X, y, classes, title="tsne plot", dimensions=2):
+          """Create tsne plot to compare an unsupervised classification of the data"""
+
+          # Apply t-SNE algorithm to transformed data
+          X_tsne = TSNE(dimensions).fit_transform(X)
+
+          sizes = [20 for c in classes]
+          colors = [None for c in classes]
+          alphas = [1.0 for c in classes]
+
+          plt.title(title)
+          plt.axis("off")
+          # plot each class with its own display parameters
+          for labels, s, color, alpha in zip(classes, sizes, colors, alphas):
+                plt.scatter(X_tsne[y.iloc[:,1] == labels, 0], X_tsne[y.iloc[:,1] == labels, 1], s=s, c=color, marker='o', label=labels, alpha=alpha)
+          plt.legend()
+
+          plt.savefig(os.path.join(self.graphs_path,"tsne.pdf"))
+          plt.close()
 
       def accuracy(self, train_stats, val_stats, graphs_title="Training vs Testing"):
           """Plot training/validation accuracy/loss"""

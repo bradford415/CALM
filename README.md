@@ -161,6 +161,8 @@ The log file tracks several things:
 
 The density plot shows the distribution of the samples after the missing values have been replaced.
 
+The t-SNE plot shows a visual of how the data is naturally seperated with unsupervised learning.
+
 The accuracy graphs show a visual of how well the model classified the samples per epoch.
 
 The confusion matrix shows how each sample in test dataset was classified after the model is trained.
@@ -188,5 +190,6 @@ The confusion matrix shows how well the test set samples were classified. The x-
 ![confusion](images/example_confusion.png)
 
 ## Future Considerations
-
+Here is a list of future work that could improve this project
+1. test
 

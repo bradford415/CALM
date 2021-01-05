@@ -191,5 +191,12 @@ The confusion matrix shows how well the test set samples were classified. The x-
 
 ## Future Considerations
 Here is a list of future work that could improve this project
-1. test
+1. Be able to process discrete data
+   - DNA data
+1. Be able to save and load the trained model
+1. Parametrize network structure
+   - number of hidden/other layers
+   - number of neurons
+   - activation functions
+1. Possible unsupervised learning approach
 

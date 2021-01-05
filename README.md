@@ -175,7 +175,7 @@ The density plot shows the distribution of the sample file. The true distributio
 #### t-SNE Plot
 A 2D visualization of the data using t-SNE, an unsupervised learning algorithm. This plot gives a relatively good comparison between how well your model is able to learn the data.
 
-![tsne](images/example_tsne.png)
+![tsne](images/example_tsne.PNG)
 
 #### Accuracy Graph
 The accuracy graph shows the accuracy of the train set and test set per epoch. This gives a good visual representation of how the model trained over time.

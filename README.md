@@ -14,7 +14,7 @@ __Overview:__
 6. Save the output results in the output folder
    1. Log file, distribution, accuracy graphs, confusion matrix
 
-Currently, this project only supports continuous data which is being classified into 3 or more labels.
+Currently, this project only supports continuous data for multiclass and binary classification.
 
 ## Note
 This project assumes that the data has already been normalized in the desired way. For example, the GEM used for the example at the bottom was already log transformed and quantile normalized.
@@ -172,6 +172,11 @@ The density plot shows the distribution of the sample file. The true distributio
 
 ![distribution](images/example_distribution.PNG)
 
+#### t-SNE Plot
+A 2D visualization of the data using t-SNE, an unsupervised learning algorithm. This plot gives a relatively good comparison between how well your model is able to learn the data.
+
+![tsne](images/example_tsne.png)
+
 #### Accuracy Graph
 The accuracy graph shows the accuracy of the train set and test set per epoch. This gives a good visual representation of how the model trained over time.
 
@@ -181,5 +186,7 @@ The accuracy graph shows the accuracy of the train set and test set per epoch. T
 The confusion matrix shows how well the test set samples were classified. The x-axis shows what the predicted labels from the model were, and the y-axis shows what the actual labels were. Ideally, the confusion matrix should show a diagonal pattern which means that the samples were predicted very well.
 
 ![confusion](images/example_confusion.png)
+
+## Future Considerations
 
 
